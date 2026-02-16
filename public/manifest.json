@@ -23,8 +23,7 @@
   "permissions": [
     "activeTab",
     "scripting",
-    "contextMenus",
-    "notifications"
+    "storage"
   ],
   "web_accessible_resources": [
     {
