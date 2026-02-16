@@ -7,9 +7,7 @@ const solpoch = new ProviderSolana();
 // Register your wallet using the Wallet Standard, passing the reference.
 initialize(solpoch);
 
-// New wallets no longer need to register wallet globals - and can 
-// ignore the code below. However if you have legacy apps relying on globals, 
-// this is the safest way to attach the reference to the window, guarding against errors.
+// for legacy apps relying on globals
 try {
     Object.defineProperty(window, 'solpoch', { value: solpoch });
 }

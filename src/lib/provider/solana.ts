@@ -1,83 +1,65 @@
-import {
-  type IdentifierArray,
-  type Wallet,
-  type WalletAccount,
-} from '@wallet-standard/base';
+import { Keypair, PublicKey, VersionedTransaction } from '@solana/web3.js';
+import type { Transaction, SendOptions, TransactionSignature } from '@solana/web3.js';
+import type { SolanaSignInInput, SolanaSignInOutput } from '@solana/wallet-standard-features';
+import type { Solpoch, SolpochEvent } from '../solpoch-wallet-standard/window.ts';
 
-import {
-  StandardConnect,
-  type StandardConnectFeature,
-  type StandardConnectMethod,
-  StandardDisconnect,
-  type StandardDisconnectFeature,
-  type StandardDisconnectMethod,
-  StandardEvents,
-  type StandardEventsFeature,
-  type StandardEventsListeners,
-  type StandardEventsNames,
-  type StandardEventsOnMethod,
-} from '@wallet-standard/features';
-
-import { PublicKey, Keypair } from '@solana/web3.js';
-import { LOGO_IMAGE, WALLET_NAME } from '../constants/common';
-import type { Solpoch } from '../solpoch-wallet-standard/window';
-
-const SOLANA_MAINNET_CHAIN = 'solana:mainnet';
-const CHAINS: IdentifierArray = [SOLANA_MAINNET_CHAIN];
 
 export class ProviderSolana implements Solpoch {
+  private _keypair: Keypair = Keypair.generate();
+  private _publicKey: PublicKey | null = null;
+  private _listeners: { [E in keyof SolpochEvent]?: SolpochEvent[E][] } = {};
 
-  readonly url: string = 'https://www.cosmostation.io/';
-  readonly version = '1.0.0';
-  readonly name: string = WALLET_NAME;
-  readonly icon = LOGO_IMAGE;
-  readonly chains = CHAINS;
-  // readonly #listeners: { [E in StandardEventsNames]?: StandardEventsListeners[E][] } = {};
-
-  private keypair = Keypair.generate();
-  private listeners: Record<string, Function[]> = {};
-
-  get accounts(): WalletAccount[] {
-    return [{
-      address: this.keypair.publicKey.toBase58(),
-      publicKey: this.keypair.publicKey.toBytes(),
-      chains: ['solana:mainnet'],
-      features: ['standard:connect']
-    }];
+  get publicKey(): PublicKey | null {
+    return this._publicKey;
   }
 
-  get features() {
-    return {
-      'standard:connect': {
-        version: '1.0.0',
-        connect: this.connect.bind(this)
-      },
-      'standard:disconnect': {
-        version: '1.0.0',
-        disconnect: this.disconnect.bind(this)
-      },
-      'standard:events': {
-        version: '1.0.0',
-        on: this.on.bind(this)
-      }
-    };
+  async connect(_options?: { onlyIfTrusted?: boolean }): Promise<{ publicKey: PublicKey }> {
+    this._publicKey = this._keypair.publicKey;
+    this._emit('connect');
+    return { publicKey: this._publicKey };
   }
 
-  async connect() {
-    this.emit('connect', { accounts: this.accounts });
-    return { accounts: this.accounts };
+  async disconnect(): Promise<void> {
+    this._publicKey = null;
+    this._emit('disconnect');
   }
 
-  async disconnect() {
-    this.emit('disconnect', {});
+  async signAndSendTransaction<T extends Transaction | VersionedTransaction>(
+    _transaction: T,
+    _options?: SendOptions
+  ): Promise<{ signature: TransactionSignature }> {
+    throw new Error('signAndSendTransaction is not implemented yet');
   }
 
-  on(event: string, listener: Function) {
-    if (!this.listeners[event]) this.listeners[event] = [];
-    this.listeners[event].push(listener);
+  async signTransaction<T extends Transaction | VersionedTransaction>(_transaction: T): Promise<T> {
+    throw new Error('signTransaction is not implemented yet');
   }
 
-  private emit(event: string, data: any) {
-    this.listeners[event]?.forEach(fn => fn(data));
+  async signAllTransactions<T extends Transaction | VersionedTransaction>(_transactions: T[]): Promise<T[]> {
+    throw new Error('signAllTransactions is not implemented yet');
+  }
+
+  async signMessage(_message: Uint8Array): Promise<{ signature: Uint8Array }> {
+    throw new Error('signMessage is not implemented yet');
+  }
+
+  async signIn(_input?: SolanaSignInInput): Promise<SolanaSignInOutput> {
+    throw new Error('signIn is not implemented yet');
+  }
+
+  // --------------- event emitter ---------------
+  on<E extends keyof SolpochEvent>(event: E, listener: SolpochEvent[E], _context?: any): void {
+    (this._listeners[event] ||= [] as any).push(listener);
+  }
+
+  off<E extends keyof SolpochEvent>(event: E, listener: SolpochEvent[E], _context?: any): void {
+    const list = this._listeners[event];
+    if (list) {
+      this._listeners[event] = list.filter((l) => l !== listener) as any;
+    }
+  }
+
+  private _emit<E extends keyof SolpochEvent>(event: E, ...args: Parameters<SolpochEvent[E]>): void {
+    this._listeners[event]?.forEach((fn) => (fn as Function).apply(null, args));
   }
 }
