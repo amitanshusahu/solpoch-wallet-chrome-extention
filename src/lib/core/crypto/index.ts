@@ -13,6 +13,6 @@ export function decryptMnemonic(encrypted: string, password: string): Promise<st
   }
 }
 
-export function keypairFromMnemonic(mnemonic: string, index: number): Keypair {
+export function keypairFromMnemonic(_mnemonic: string, _index: number): Keypair {
   return Keypair.generate();
 }
