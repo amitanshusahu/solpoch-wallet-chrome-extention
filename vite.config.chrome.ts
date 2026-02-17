@@ -1,18 +1,16 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), nodePolyfills()],
   build: {
     emptyOutDir: false,
     minify: false,
     rollupOptions: {
       input: {
-        // background: 'src/background/index.ts',
         index: 'index.html',
-        // content: 'src/content/index.ts',
-        // inject: 'src/inject/index.ts',
       },
       output: [
         {
