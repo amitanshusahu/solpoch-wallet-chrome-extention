@@ -18,13 +18,14 @@
       ],
       "js": [
         "js/content.js"
-      ]
+      ],
+      "run_at": "document_start"
     }
   ],
   "permissions": [
     "activeTab",
-    "scripting",
-    "storage"
+    "storage",
+    "unlimitedStorage"
   ],
   "web_accessible_resources": [
     {

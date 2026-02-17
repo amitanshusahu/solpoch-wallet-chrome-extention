@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "build": "concurrently \"npm run build:chrome:main\" \"npm run build:chrome:inject\" \"npm run build:chrome:content\" \"npm run build:chrome:background\"",
+    "build:chrome:main": "tsc -b && vite build --config vite.config.chrome.ts ",
+    "build:chrome:inject": "tsc -b && vite build --config vite.config.chrome.inject.ts ",
+    "build:chrome:content": "tsc -b && vite build --config vite.config.chrome.content.ts ",
+    "build:chrome:background": "tsc -b && vite build --config vite.config.chrome.background.ts "
   },
   "dependencies": {
     "@solana/wallet-standard-features": "^1.3.0",
@@ -25,6 +28,7 @@
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "concurrently": "^9.2.1",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",

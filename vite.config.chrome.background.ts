@@ -5,18 +5,20 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
+    emptyOutDir: false,
+    minify: false,
     rollupOptions: {
       input: {
         background: 'src/background/index.ts',
-        index: 'index.html',
-        content: 'src/content/index.ts',
-        inject: 'src/inject/index.ts',
       },
-      output: {
-        entryFileNames: 'js/[name].js',
-        assetFileNames: 'assets/[name].[ext]',
-        format: 'es',
-      },
-    }
+      output: [
+        {
+          entryFileNames: 'js/[name].js',
+          assetFileNames: 'assets/[name]-[hash].[ext]',
+          inlineDynamicImports: true,
+          format: 'es',
+        },
+      ],
+    },
   }
 })
