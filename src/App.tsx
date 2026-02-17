@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { sendMessage } from "./lib/utils/background-message";
+import { Link } from "react-router-dom";
 
 function App() {
   const [status, setStatus] = useState<string>("Loading...");
@@ -36,8 +37,16 @@ function App() {
     setStatus(`Connected: ${publicKey}`);
   }
 
+  async function handleClear() {
+    await sendMessage({
+      type: "VAULT_CLEAR"
+    });
+
+    setStatus("CREATE");
+  }
+
   return (
-    <div>
+    <div className="flex flex-col gap-4 w-75 h-75">
       <h2>{status}</h2>
 
       {status !== "Loading..." && (
@@ -58,6 +67,9 @@ function App() {
           )}
         </>
       )}
+
+      <Link to="/badass">Go to BadAss Component</Link>
+      <button onClick={handleClear} className="p-4 bg-gray-50">Logout</button>
     </div>
   );
 }

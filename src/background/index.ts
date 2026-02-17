@@ -26,6 +26,11 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
           });
           break;
 
+        case "VAULT_CLEAR":
+          await vault.clear();
+          sendResponse({ success: true });
+          break;
+
         default:
           sendResponse({ success: false, error: "Unknown message type" });
       }

@@ -23,4 +23,8 @@ export class Vault {
 
     return keypairFromMnemonic(mnemonic, 0);
   }
+
+  async clear() {
+    await chrome.storage.local.remove("vault");
+  }
 }
