@@ -1,30 +1,60 @@
-import type { Keypair } from "@solana/web3.js";
-import { decryptMnemonic, encryptMnemonic, keypairFromMnemonic } from "../crypto";
-import { generateMnemonic } from "../derivation";
+import { checkPassword, encryptMnemonic } from "../crypto";
+import { generateMnemonic } from "bip39";
+import { keypairFromMnemonic } from "../derivation";
+import type { Account, VaultDataV1 } from "../../../types/vault";
 
 export class Vault {
+
+  private async getVaultData(): Promise<VaultDataV1> {
+    const { vault } = await chrome.storage.local.get("vault") as { vault: VaultDataV1 };
+    return vault;
+  }
+
+  private async saveVaultData(vaultData: VaultDataV1): Promise<void> {
+    await chrome.storage.local.set({ vault: vaultData });
+  }
+
+  private async cleanStorage(): Promise<void> {
+    await chrome.storage.local.remove("vault");
+  }
+
   async exists(): Promise<boolean> {
-    const data = await chrome.storage.local.get("vault");
-    return !!data.vault;
+    const data = await this.getVaultData();
+    return !!data;
   }
 
   async create(password: string): Promise<string> {
     const mnemonic = generateMnemonic();
-    const encrypted = await encryptMnemonic(mnemonic, password);
-
-    await chrome.storage.local.set({ vault: encrypted });
-
-    return mnemonic;
+    const encryptedMnemonic = await encryptMnemonic(mnemonic, password);
+    const account = keypairFromMnemonic(mnemonic, 0);
+    const vaultData: VaultDataV1 = {
+      encryptedMnemonic: encryptedMnemonic,
+      accounts: [{ index: 0, pubkey: account }],
+      activeAccountIndex: 0,
+      version: 1,
+    };
+    await this.saveVaultData(vaultData);
+    return mnemonic; // return unencrypted mnemonic once for backup, will be deleted from memory after this function returns
   }
 
-  async unlock(password: string): Promise<Keypair> {
-    const { vault } = await chrome.storage.local.get("vault") as { vault: string };
-    const mnemonic = await decryptMnemonic(vault, password);
+  async unlock(password: string): Promise<Account> {
+    const vaultData = await this.getVaultData();
+    const isPasswordCorrect = await checkPassword(vaultData.encryptedMnemonic, password);
 
-    return keypairFromMnemonic(mnemonic, 0);
+    if (!isPasswordCorrect) {
+      throw new Error("Incorrect password");
+    }
+
+    return vaultData.accounts[vaultData.activeAccountIndex];
+  }
+
+  async getActiveAccount(): Promise<Account> {
+    const vaultData = await this.getVaultData();
+    return vaultData.accounts[vaultData.activeAccountIndex];
   }
 
   async clear() {
-    await chrome.storage.local.remove("vault");
+    await this.cleanStorage();
   }
+
 }

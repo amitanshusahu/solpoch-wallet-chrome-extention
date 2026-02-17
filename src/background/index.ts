@@ -19,10 +19,10 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
           break;
 
         case "VAULT_UNLOCK":
-          const keypair = await vault.unlock(message.password);
+          const account = await vault.unlock(message.password);
           sendResponse({
             success: true,
-            data: keypair.publicKey.toBase58()
+            data: account,
           });
           break;
 
