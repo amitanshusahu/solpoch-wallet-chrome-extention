@@ -1,44 +1,65 @@
 /// <reference types="chrome" />
 
 import { Vault } from "../lib/core/vault";
+import { VaultCreateRequestSchema, VaultUnlockRequestSchema, type MessageMap, type MessageRequest, type MessageResponse } from "../types/message";
 
 const vault = new Vault();
 
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  (async () => {
-    try {
-      switch (message.type) {
+chrome.runtime.onMessage.addListener(
+  <T extends keyof MessageMap>(
+    message: MessageRequest<T>,
+    _sender: chrome.runtime.MessageSender,
+    sendResponse: (res: MessageResponse<T>) => void
+  ): boolean => {
+    (async () => {
+      try {
+        switch (message.type) {
+          case "VAULT_EXISTS": {
+            sendResponse({
+              success: true,
+              data: await vault.exists(),
+            });
+            break;
+          }
 
-        case "VAULT_EXISTS":
-          sendResponse({ success: true, data: await vault.exists() });
-          break;
+          case "VAULT_CREATE": {
+            const payload = VaultCreateRequestSchema.parse(message.payload);
+            const mnemonic = await vault.create(payload.password);
+            sendResponse({
+              success: true,
+              data: mnemonic
+            });
+            break;
+          }
 
-        case "VAULT_CREATE":
-          const mnemonic = await vault.create(message.password);
-          sendResponse({ success: true, data: mnemonic });
-          break;
+          case "VAULT_UNLOCK": {
+            const payload = VaultUnlockRequestSchema.parse(message.payload);
+            const account = await vault.unlock(payload.password);
+            sendResponse({
+              success: true,
+              data: account
+            });
+            break;
+          }
 
-        case "VAULT_UNLOCK":
-          const account = await vault.unlock(message.password);
-          sendResponse({
-            success: true,
-            data: account,
-          });
-          break;
-
-        case "VAULT_CLEAR":
-          await vault.clear();
-          sendResponse({ success: true });
-          break;
-
-        default:
-          sendResponse({ success: false, error: "Unknown message type" });
+          case "VAULT_CLEAR": {
+            await vault.clear();
+            sendResponse({
+              success: true,
+              data: null
+            });
+            break;
+          }
+        }
+      } catch (err: Error | unknown) {
+        sendResponse({
+          success: false,
+          error: err instanceof Error ? err.message : `Unknown Error: ${err}`,
+          data: null
+        });
       }
-    } catch (err: any) {
-      sendResponse({ success: false, error: err.message });
-    }
-  })();
+    })();
 
-  // IMPORTANT for async response
-  return true;
-});
+    return true; // Indicates that we will send a response asynchronously
+  }
+);

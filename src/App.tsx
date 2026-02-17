@@ -8,10 +8,7 @@ function App() {
 
   useEffect(() => {
     async function checkVault() {
-      const exists = await sendMessage<boolean>({
-        type: "VAULT_EXISTS"
-      });
-
+      const exists = await sendMessage("VAULT_EXISTS", undefined);
       setStatus(exists ? "UNLOCK" : "CREATE");
     }
 
@@ -19,29 +16,19 @@ function App() {
   }, []);
 
   async function handleCreate() {
-    const mnemonic = await sendMessage<string>({
-      type: "VAULT_CREATE",
-      password
-    });
+    const mnemonic = await sendMessage("VAULT_CREATE", { password });
 
     console.log("Show mnemonic ONCE:", mnemonic);
     setStatus("UNLOCK");
   }
 
   async function handleUnlock() {
-    const publicKey = await sendMessage<string>({
-      type: "VAULT_UNLOCK",
-      password
-    });
-
-    setStatus(`Connected: ${publicKey}`);
+    const account = await sendMessage("VAULT_UNLOCK", { password });
+    setStatus(`Connected: ${account.pubkey}`);
   }
 
   async function handleClear() {
-    await sendMessage({
-      type: "VAULT_CLEAR"
-    });
-
+    await sendMessage("VAULT_CLEAR", undefined);
     setStatus("CREATE");
   }
 

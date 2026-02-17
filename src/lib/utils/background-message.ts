@@ -1,13 +1,19 @@
-export function sendMessage<T = any>(message: any): Promise<T> {
+import type { MessageMap, MessageResponse } from "../../types/message";
+
+export function sendMessage<T extends keyof MessageMap>(
+  type: T,
+  payload: MessageMap[T]["req"]
+): Promise<MessageMap[T]["res"]> {
   return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(message, (response) => {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      } else if (!response.success) {
-        reject(new Error(response.error));
-      } else {
-        resolve(response.data);
+    chrome.runtime.sendMessage(
+      { type, payload },
+      (response: MessageResponse<T>) => {
+        if (!response.success) {
+          reject(response.error);
+        } else {
+          resolve(response.data as MessageMap[T]["res"]);
+        }
       }
-    });
+    );
   });
 }
