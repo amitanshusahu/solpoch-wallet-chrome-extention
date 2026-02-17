@@ -51,10 +51,10 @@ chrome.runtime.onMessage.addListener(
             break;
           }
         }
-      } catch (err: Error | unknown) {
+      } catch (err) {
         sendResponse({
           success: false,
-          error: err instanceof Error ? err.message : `Unknown Error: ${err}`,
+          error: `Service Worker Caught Errors: ${err}`,
           data: null
         });
       }

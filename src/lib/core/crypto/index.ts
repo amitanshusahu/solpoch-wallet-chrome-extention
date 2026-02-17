@@ -1,82 +1,120 @@
-import sodium from "libsodium-wrappers";
-
 const SALT_BYTES = 16;
+const NONCE_BYTES = 12;
+const KEY_LENGTH = 256;
+const PBKDF2_ITERATIONS = 100000;
+
+async function deriveKey(
+  password: string,
+  salt: Uint8Array
+): Promise<CryptoKey> {
+  const encoder = new TextEncoder();
+  const passwordBuffer = encoder.encode(password);
+
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    passwordBuffer,
+    "PBKDF2",
+    false,
+    ["deriveBits", "deriveKey"]
+  );
+
+  return await crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt: salt.buffer as ArrayBuffer,
+      iterations: PBKDF2_ITERATIONS,
+      hash: "SHA-256",
+    },
+    keyMaterial,
+    { name: "AES-GCM", length: KEY_LENGTH },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
+  const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+function base64ToArrayBuffer(base64: string): Uint8Array {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
 
 export async function encryptMnemonic(
   mnemonic: string,
   password: string
 ): Promise<string> {
-  await sodium.ready;
+  const salt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
+  const nonce = crypto.getRandomValues(new Uint8Array(NONCE_BYTES));
 
-  const salt = sodium.randombytes_buf(SALT_BYTES);
+  const key = await deriveKey(password, salt);
 
-  const key = sodium.crypto_pwhash(
-    sodium.crypto_secretbox_KEYBYTES,
-    password,
-    salt,
-    sodium.crypto_pwhash_OPSLIMIT_MODERATE,
-    sodium.crypto_pwhash_MEMLIMIT_MODERATE,
-    sodium.crypto_pwhash_ALG_DEFAULT
-  );
+  const encoder = new TextEncoder();
+  const mnemonicBuffer = encoder.encode(mnemonic);
 
-  const nonce = sodium.randombytes_buf(
-    sodium.crypto_secretbox_NONCEBYTES
-  );
-
-  const ciphertext = sodium.crypto_secretbox_easy(
-    mnemonic,
-    nonce,
-    key
+  const ciphertext = await crypto.subtle.encrypt(
+    {
+      name: "AES-GCM",
+      iv: nonce,
+    },
+    key,
+    mnemonicBuffer
   );
 
   return JSON.stringify({
-    salt: sodium.to_base64(salt),
-    nonce: sodium.to_base64(nonce),
-    ciphertext: sodium.to_base64(ciphertext),
+    salt: arrayBufferToBase64(salt),
+    nonce: arrayBufferToBase64(nonce),
+    ciphertext: arrayBufferToBase64(ciphertext),
   });
 }
-
 
 export async function decryptMnemonic(
   encryptedMnemonics: string,
   password: string
 ): Promise<string> {
-  await sodium.ready;
-
   const payload = JSON.parse(encryptedMnemonics);
 
-  const salt = sodium.from_base64(payload.salt);
-  const nonce = sodium.from_base64(payload.nonce);
-  const ciphertext = sodium.from_base64(payload.ciphertext);
+  const salt = base64ToArrayBuffer(payload.salt);
+  const nonce = base64ToArrayBuffer(payload.nonce);
+  const ciphertext = base64ToArrayBuffer(payload.ciphertext);
 
-  const key = sodium.crypto_pwhash(
-    sodium.crypto_secretbox_KEYBYTES,
-    password,
-    salt,
-    sodium.crypto_pwhash_OPSLIMIT_MODERATE,
-    sodium.crypto_pwhash_MEMLIMIT_MODERATE,
-    sodium.crypto_pwhash_ALG_DEFAULT
-  );
+  const key = await deriveKey(password, salt);
 
-  const decrypted = sodium.crypto_secretbox_open_easy(
-    ciphertext,
-    nonce,
-    key
-  );
+  try {
+    const decrypted = await crypto.subtle.decrypt(
+      {
+        name: "AES-GCM",
+        iv: nonce.buffer as ArrayBuffer,
+      },
+      key,
+      ciphertext.buffer as ArrayBuffer
+    );
 
-  if (!decrypted) {
+    const decoder = new TextDecoder();
+    return decoder.decode(decrypted);
+  } catch (error) {
     throw new Error("Incorrect password or corrupted vault");
   }
-
-  return sodium.to_string(decrypted);
 }
 
-export async function checkPassword(encryptedMnemonics: string, password: string): Promise<boolean> {
-  const decrypted = await decryptMnemonic(encryptedMnemonics, password);
-
-  if (!decrypted) {
+export async function checkPassword(
+  encryptedMnemonics: string,
+  password: string
+): Promise<boolean> {
+  try {
+    const decrypted = await decryptMnemonic(encryptedMnemonics, password);
+    return !!decrypted;
+  } catch {
     return false;
   }
-
-  return true;
 }
