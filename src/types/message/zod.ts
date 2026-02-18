@@ -14,3 +14,8 @@ export const ConnectWalletRequestSchema = z.object({
   origin: z.string().url("Origin must be a valid URL"),
 });
 export type ConnectWalletRequest = z.infer<typeof ConnectWalletRequestSchema>;
+
+export const ApprovalResponseRequestSchema = z.object({
+  approved: z.boolean(),
+});
+export type ApprovalResponseRequest = z.infer<typeof ApprovalResponseRequestSchema>;

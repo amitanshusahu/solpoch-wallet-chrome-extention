@@ -9,7 +9,16 @@ function App() {
   useEffect(() => {
     async function checkVault() {
       const exists = await sendMessage("VAULT_EXISTS", undefined);
-      setStatus(exists ? "UNLOCK" : "CREATE");
+      const isUnlocked = await sendMessage("VAULT_IS_UNLOCKED", undefined);
+
+      if (exists && isUnlocked) {
+        const activeAccount = await sendMessage("VAULT_GET_ACTIVE_ACCOUNT", undefined);
+        setStatus(`Connected: ${activeAccount?.pubkey}`);
+      } else if (exists && !isUnlocked) {
+        setStatus("LOCKED");
+      } else {
+        setStatus("CREATE");
+      }
     }
 
     checkVault();
@@ -38,18 +47,23 @@ function App() {
 
       {status !== "Loading..." && (
         <>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          {
+            (status === "CREATE" || status === "LOCKED") && (
+              <input
+                type="password"
+                placeholder="Enter vault password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="p-2 border border-gray-300 rounded"
+              />
+            )
+          }
 
           {status === "CREATE" && (
             <button onClick={handleCreate}>Create Wallet</button>
           )}
 
-          {status === "UNLOCK" && (
+          {status === "LOCKED" && (
             <button onClick={handleUnlock}>Unlock Wallet</button>
           )}
         </>

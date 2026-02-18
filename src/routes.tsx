@@ -1,5 +1,6 @@
 import App from "./App";
 import BadAss from "./BadAss";
+import ConnectApprove from "./components/pages/ConnectApprove";
 
 export const routes = [
   {
@@ -13,5 +14,9 @@ export const routes = [
   {
     path: '/badass',
     element: <BadAss />
+  },
+  {
+    path: '/connect',
+    element: <ConnectApprove />
   }
 ]

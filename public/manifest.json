@@ -25,7 +25,8 @@
   "permissions": [
     "activeTab",
     "storage",
-    "unlimitedStorage"
+    "unlimitedStorage",
+    "scripting"
   ],
   "web_accessible_resources": [
     {

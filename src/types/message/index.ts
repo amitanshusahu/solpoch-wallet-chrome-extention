@@ -1,5 +1,5 @@
 import type { Account } from "../vault";
-import type { ConnectWalletRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
+import type { ApprovalResponseRequest, ConnectWalletRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
 
 export type MessageMap = {
   VAULT_EXISTS: {
@@ -25,6 +25,21 @@ export type MessageMap = {
   CONNECT_WALLET: {
     req: ConnectWalletRequest;
     res: { publicKey: string };
+  };
+
+  APPROVAL_RESPONSE: {
+    req: ApprovalResponseRequest;
+    res: null;
+  };
+
+  VAULT_IS_UNLOCKED: {
+    req: void;
+    res: boolean;
+  }
+
+  VAULT_GET_ACTIVE_ACCOUNT: {
+    req: void;
+    res: Account | null;
   }
 };
 

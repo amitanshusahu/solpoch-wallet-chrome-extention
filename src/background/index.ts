@@ -1,7 +1,17 @@
 /// <reference types="chrome" />
 
 import { Vault } from "../lib/core/vault";
-import { VaultCreateRequestSchema, VaultUnlockRequestSchema, type MessageMap, type MessageRequest, type MessageResponse } from "../types/message";
+import {
+  type MessageMap,
+  type MessageRequest,
+  type MessageResponse
+} from "../types/message";
+import {
+  VaultCreateRequestSchema,
+  VaultUnlockRequestSchema,
+  ConnectWalletRequestSchema
+} from "../types/message/zod";
+import { handleConnectWallet } from "./service";
 
 const vault = new Vault();
 
@@ -47,6 +57,35 @@ chrome.runtime.onMessage.addListener(
             sendResponse({
               success: true,
               data: null
+            });
+            break;
+          }
+
+          case "VAULT_IS_UNLOCKED": {
+            const isUnlocked = await vault.getIsUnlocked();
+            sendResponse({
+              success: true,
+              data: isUnlocked
+            });
+            break;
+          }
+
+          case "VAULT_GET_ACTIVE_ACCOUNT": {
+            const activeAccount = await vault.getActiveAccount();
+            sendResponse({
+              success: true,
+              data: activeAccount
+            });
+            break;
+          }
+
+          case "CONNECT_WALLET": {
+            const payload = ConnectWalletRequestSchema.parse(message.payload);
+            const response = await handleConnectWallet(payload, vault);
+            sendResponse({
+              success: response.success,
+              data: response.data,
+              error: response?.error
             });
             break;
           }
