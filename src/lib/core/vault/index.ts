@@ -5,6 +5,8 @@ import type { Account, VaultDataV1 } from "../../../types/vault";
 
 export class Vault {
 
+  private isUnlocked: boolean = false;
+
   private async getVaultData(): Promise<VaultDataV1> {
     const { vault } = await chrome.storage.local.get("vault") as { vault: VaultDataV1 };
     return vault;
@@ -44,7 +46,7 @@ export class Vault {
     if (!isPasswordCorrect) {
       throw new Error("Incorrect password");
     }
-
+    this.isUnlocked = true;
     return vaultData.accounts[vaultData.activeAccountIndex];
   }
 
@@ -55,6 +57,15 @@ export class Vault {
 
   async clear() {
     await this.cleanStorage();
+    this.isUnlocked = false;
+  }
+
+  async lock() {
+    this.isUnlocked = false;
+  }
+
+  async getIsUnlocked(): Promise<boolean> {
+    return this.isUnlocked;
   }
 
 }

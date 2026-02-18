@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { sendMessage } from "./lib/utils/background-message";
+import { sendMessage } from "./lib/utils/chrome/message";
 import { Link } from "react-router-dom";
 
 function App() {

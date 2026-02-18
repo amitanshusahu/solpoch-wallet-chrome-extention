@@ -1,5 +1,5 @@
 import type { Account } from "../vault";
-import { z } from "zod";
+import type { ConnectWalletRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
 
 export type MessageMap = {
   VAULT_EXISTS: {
@@ -21,6 +21,11 @@ export type MessageMap = {
     req: void;
     res: null;
   };
+
+  CONNECT_WALLET: {
+    req: ConnectWalletRequest;
+    res: { publicKey: string };
+  }
 };
 
 
@@ -34,12 +39,3 @@ export type MessageResponse<T extends keyof MessageMap> = {
   data: MessageMap[T]["res"];
   error?: string;
 };
-
-export const VaultCreateRequestSchema = z.object({
-  password: z.string().min(8, "Password must be at least 8 characters long"),
-});
-export type VaultCreateRequest = z.infer<typeof VaultCreateRequestSchema>;
-export const VaultUnlockRequestSchema = z.object({
-  password: z.string().min(8, "Password must be at least 8 characters long"),
-});
-export type VaultUnlockRequest = z.infer<typeof VaultUnlockRequestSchema>;

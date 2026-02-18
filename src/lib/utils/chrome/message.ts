@@ -1,4 +1,4 @@
-import type { MessageMap, MessageResponse } from "../../types/message";
+import type { MessageMap, MessageResponse } from "../../../types/message";
 
 export function sendMessage<T extends keyof MessageMap>(
   type: T,
