@@ -41,6 +41,11 @@ export type MessageMap = {
     req: void;
     res: Account | null;
   }
+
+  LOGGER: {
+    req: string;
+    res: null;
+  }
 };
 
 

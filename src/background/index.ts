@@ -24,6 +24,15 @@ chrome.runtime.onMessage.addListener(
     (async () => {
       try {
         switch (message.type) {
+          case "LOGGER" : {
+            console.log("Logger Message from Content Script:", message.payload);
+            sendResponse({
+              success: true,
+              data: null
+            });
+            break;
+          }
+
           case "VAULT_EXISTS": {
             sendResponse({
               success: true,

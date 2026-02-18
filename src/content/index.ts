@@ -10,11 +10,15 @@
 //   element.style.borderRadius = '5px';
 //   element.style.zIndex = '10000';
 
+import { sendMessage } from "../lib/utils/chrome/message";
+
 //   document.body.appendChild(element);
 // }
 
 function injectScript() {
   try {
+    sendMessage("LOGGER", "Injecting script into page...").catch(console.error);
+    console.log('Injecting script into page...');
     const container = document.head || document.documentElement;
     const scriptTag = document.createElement('script');
     scriptTag.setAttribute('src', chrome.runtime.getURL('js/inject.js'));

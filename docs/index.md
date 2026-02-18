@@ -1,6 +1,13 @@
 # scope
 - connect with dApps :- wallet standard injection
-- securely store sensitive data :- ui <-> service worker <-> vault actions  
+- securely store sensitive data :- ui <-> service worker <-> vault actions
+- Origin-based permission store
+- Auto-reconnect logic
+- Session unlock state : valt.isUnlocked
+- Request queueing system
+- Timeout handling
+- Replay protection
+- Message validation schema (zod)
 
 # could work on
 - Migration logic

@@ -1,11 +1,11 @@
-import { Keypair, PublicKey, VersionedTransaction } from '@solana/web3.js';
+import { PublicKey, VersionedTransaction } from '@solana/web3.js';
 import type { Transaction, SendOptions, TransactionSignature } from '@solana/web3.js';
 import type { SolanaSignInInput, SolanaSignInOutput } from '@solana/wallet-standard-features';
 import type { Solpoch, SolpochEvent } from '../solpoch-wallet-standard/window.ts';
+import { sendMessage } from '../utils/chrome/message.ts';
 
 
 export class ProviderSolana implements Solpoch {
-  private _keypair: Keypair = Keypair.generate();
   private _publicKey: PublicKey | null = null;
   private _listeners: { [E in keyof SolpochEvent]?: SolpochEvent[E][] } = {};
 
@@ -13,8 +13,11 @@ export class ProviderSolana implements Solpoch {
     return this._publicKey;
   }
 
-  async connect(_options?: { onlyIfTrusted?: boolean }): Promise<{ publicKey: PublicKey }> {
-    this._publicKey = this._keypair.publicKey;
+  async connect(_options?: { onlyIfTrusted?: boolean }): Promise<{ publicKey: PublicKey }> {    
+    console.log('Connecting to Solpoch Wallet...');
+    const response = await sendMessage("CONNECT_WALLET", { origin: window.location.origin });
+    console.log('Response from background:', response);
+    this._publicKey = new PublicKey(response.publicKey);
     this._emit('connect');
     return { publicKey: this._publicKey };
   }
