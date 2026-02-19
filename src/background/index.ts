@@ -20,6 +20,15 @@ chrome.runtime.onMessage.addListener(
     _sender: chrome.runtime.MessageSender,
     sendResponse: (res: MessageResponse<T>) => void
   ): boolean => {
+    // NOTE : for future me
+    // Don't handle APPROVAL_RESPONSE here — it's handled by the
+    // temporary listener created in openApprovalPopup().
+    // Returning false tells Chrome this listener won't send a response,
+    // so the other listener's sendResponse stays valid (handleConnectWallet -> openPopup -> listener).
+    if (message.type === "APPROVAL_RESPONSE") {
+      return false;
+    }
+
     (async () => {
       try {
         switch (message.type) {

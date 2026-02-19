@@ -24,21 +24,24 @@ export function sendWindowMessage<T extends keyof MessageMap>(
 ): Promise<MessageMap[T]["res"]> {
   return new Promise((resolve) => {
     const requestId = crypto.randomUUID();
-    // send message to content script listner
-    window.postMessage({
-      type: type,
-      id: requestId,
-      payload
-    }, "*");
 
     function handler(event: MessageEvent) {
       console.log('Received message event:', event);
-      if (event.data?.id === requestId) {
+      // Only handle response messages (ones without a `type` field) that match our request ID
+      if (event.data?.id === requestId && !event.data?.type && "response" in event.data) {
         window.removeEventListener('message', handler);
         resolve(event.data.response as MessageMap[T]["res"]);
       }
     }
 
+    // IMPORTANT: Register listener BEFORE posting to avoid any race
     window.addEventListener('message', handler);
+
+    // send message to content script listener
+    window.postMessage({
+      type: type,
+      id: requestId,
+      payload
+    }, "*");
   });
 }

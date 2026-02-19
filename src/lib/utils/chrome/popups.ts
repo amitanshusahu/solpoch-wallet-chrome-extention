@@ -4,7 +4,7 @@ import { ApprovalResponseRequestSchema } from "../../../types/message/zod";
 export async function openApprovalPopup(origin: string): Promise<boolean> {
   console.log(`Opening approval popup for origin: ${origin}`);
   const popupWindow = await chrome.windows.create({
-    url: chrome.runtime.getURL("index.html/connect?origin=" + origin),
+    url: chrome.runtime.getURL("index.html#/connect?origin=" + origin),
     type: "popup",
     width: 400,
     height: 600,
