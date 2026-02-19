@@ -28,10 +28,11 @@ export class Vault {
   async create(password: string): Promise<string> {
     const mnemonic = generateMnemonic();
     const encryptedMnemonic = await encryptMnemonic(mnemonic, password);
-    const account = keypairFromMnemonic(mnemonic, 0);
+    const keypair = keypairFromMnemonic(mnemonic, 0);
+    console.log("keypair from mnemonic:", keypair);
     const vaultData: VaultDataV1 = {
       encryptedMnemonic: encryptedMnemonic,
-      accounts: [{ index: 0, pubkey: account }],
+      accounts: [{ index: 0, pubkey: keypair }],
       activeAccountIndex: 0,
       version: 1,
     };

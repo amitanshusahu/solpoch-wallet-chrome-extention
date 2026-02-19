@@ -24,8 +24,15 @@ export function sendWindowMessage<T extends keyof MessageMap>(
 ): Promise<MessageMap[T]["res"]> {
   return new Promise((resolve) => {
     const requestId = crypto.randomUUID();
+    // send message to content script listner
+    window.postMessage({
+      type: type,
+      id: requestId,
+      payload
+    }, "*");
 
     function handler(event: MessageEvent) {
+      console.log('Received message event:', event);
       if (event.data?.id === requestId) {
         window.removeEventListener('message', handler);
         resolve(event.data.response as MessageMap[T]["res"]);
@@ -33,11 +40,5 @@ export function sendWindowMessage<T extends keyof MessageMap>(
     }
 
     window.addEventListener('message', handler);
-
-    window.postMessage({
-      type: type,
-      id: requestId,
-      payload
-    }, "*");
   });
 }

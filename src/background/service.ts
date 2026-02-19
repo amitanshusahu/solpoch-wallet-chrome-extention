@@ -11,21 +11,26 @@ export async function handleConnectWallet(
 
   const vaultExists = await vaultService.exists();
   if (!vaultExists) {
+    console.error("No vault found. Rejecting connection request.");
     throw new Error("Vault does not exist. Please create a vault first.");
   }
   const isUnlocked = await vaultService.getIsUnlocked();
   if (!isUnlocked) {
+    console.error("Vault is locked. Rejecting connection request.");
     throw new Error("Vault is locked. Please unlock the vault first.");
   }
 
   const userApproval = await openApprovalPopup(origin);
 
   if (!userApproval) {
+    console.error(`User rejected the connection request from origin: ${origin}`);
     throw new Error("User rejected the connection request.");
   }
 
+  const account = await vaultService.getActiveAccount();
+
   return {
     success: true,
-    data: { publicKey: "dummy_public_key" }
+    data: { publicKey: account.pubkey }
   };
 }

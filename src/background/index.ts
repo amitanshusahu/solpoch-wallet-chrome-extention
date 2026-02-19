@@ -88,8 +88,10 @@ chrome.runtime.onMessage.addListener(
           }
 
           case "CONNECT_WALLET": {
+            console.log('Received CONNECT_WALLET message in background:', message);
             const payload = ConnectWalletRequestSchema.parse(message.payload);
             const response = await handleConnectWallet(payload);
+            console.log('Response from handleConnectWallet:', response);
             sendResponse({
               success: response.success,
               data: response.data,
