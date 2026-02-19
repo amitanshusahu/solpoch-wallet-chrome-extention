@@ -13,13 +13,18 @@ export class ProviderSolana implements Solpoch {
     return this._publicKey;
   }
 
-  async connect(_options?: { onlyIfTrusted?: boolean }): Promise<{ publicKey: PublicKey }> {    
-    console.log('Connecting to Solpoch Wallet...');
-    const response = await sendWindowMessage('CONNECT_WALLET', { origin: window.location.origin });
-    console.log('Response from background:', response);
-    this._publicKey = new PublicKey(response.publicKey);
-    this._emit('connect');
-    return { publicKey: this._publicKey };
+  async connect(_options?: { onlyIfTrusted?: boolean }): Promise<{ publicKey: PublicKey }> {
+    try {
+      console.log('Connecting to Solpoch Wallet...');
+      const response = await sendWindowMessage('CONNECT_WALLET', { origin: window.location.origin });
+      console.log('Response from background:', response);
+      this._publicKey = new PublicKey(response.publicKey);
+      this._emit('connect');
+      return { publicKey: this._publicKey };
+    } catch (error) {
+      console.error('Failed to connect to Solpoch Wallet:', error);
+      return { publicKey: null as any };
+    }
   }
 
   async disconnect(): Promise<void> {

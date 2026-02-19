@@ -1,5 +1,5 @@
 {
-  "name": "chrome-extention",
+  "name": "solpoch-chrome-extension",
   "private": true,
   "version": "0.0.0",
   "type": "module",
