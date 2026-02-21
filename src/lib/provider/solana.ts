@@ -23,7 +23,9 @@ export class ProviderSolana implements Solpoch {
       return { publicKey: this._publicKey };
     } catch (error) {
       console.error('Failed to connect to Solpoch Wallet:', error);
-      return { publicKey: null as any };
+      this._publicKey = null;
+      this._emit('disconnect');
+      throw error;
     }
   }
 

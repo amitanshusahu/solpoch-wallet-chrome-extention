@@ -15,14 +15,22 @@ function injectScript() {
 injectScript();
 
 window.addEventListener("message", async (event) => {
-  if (event.source !== window) return;
-  if (!event.data?.type) return;
-  console.log('Received message from injected script:', event.data); 
-  const requestId = event.data.id;
-  const response = await sendMessage(event.data.type, event.data.payload);
-  console.log('Response from background:', response);
-  window.postMessage({
-    id: requestId,
-    response
-  }, "*");
+  try {
+    if (event.source !== window) return;
+    if (!event.data?.type) return;
+    console.log('Received message from injected script:', event.data);
+    const requestId = event.data.id;
+    const response = await sendMessage(event.data.type, event.data.payload);
+    console.log('Response from background:', response);
+    window.postMessage({
+      id: requestId,
+      response
+    }, "*");
+  } catch (error) {
+    console.error('Error handling message from injected script:', error);
+    window.postMessage({
+      id: event.data?.id,
+      response: { success: false, error: (error as Error).message }
+    }, "*");
+  }
 });
