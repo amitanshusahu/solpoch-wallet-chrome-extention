@@ -1,5 +1,5 @@
 import { vaultService } from "../lib/core/vault/service";
-import { openApprovalPopup } from "../lib/utils/chrome/popups";
+import { openApprovalPopup, openUnlockPopup } from "../lib/utils/chrome/popups";
 import type { MessageRequest, MessageResponse } from "../types/message";
 
 
@@ -16,8 +16,11 @@ export async function handleConnectWallet(
   }
   const isUnlocked = await vaultService.getIsUnlocked();
   if (!isUnlocked) {
-    console.error("Vault is locked. Rejecting connection request.");
-    throw new Error("Vault is locked. Please unlock the vault first.");
+    const userUnlocked = await openUnlockPopup();
+    if (!userUnlocked) {
+      console.error("User failed to unlock the vault. Rejecting connection request.");
+      throw new Error("Vault is locked. Please unlock the vault to connect.");
+    }
   }
 
   const userApproval = await openApprovalPopup(origin);

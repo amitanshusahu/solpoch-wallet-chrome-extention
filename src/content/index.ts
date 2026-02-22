@@ -27,7 +27,7 @@ window.addEventListener("message", async (event) => {
       response
     }, "*");
   } catch (error) {
-    console.error('Error handling message from injected script:', error);
+    console.log('Error handling message from injected script:', error);
     window.postMessage({
       id: event.data?.id,
       response: { success: false, error: (error as Error).message }

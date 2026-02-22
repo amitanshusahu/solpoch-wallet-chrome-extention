@@ -1,5 +1,5 @@
 import type { Account } from "../vault";
-import type { ApprovalResponseRequest, ConnectWalletRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
+import type { ApprovalResponseRequest, ConnectWalletRequest, UnlockPopupResponseRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
 
 export type MessageMap = {
   VAULT_EXISTS: {
@@ -44,6 +44,11 @@ export type MessageMap = {
 
   LOGGER: {
     req: string;
+    res: null;
+  }
+
+  UNLOCK_POPUP_RESPONSE: {
+    req: UnlockPopupResponseRequest;
     res: null;
   }
 };

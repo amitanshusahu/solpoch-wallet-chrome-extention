@@ -25,7 +25,8 @@ chrome.runtime.onMessage.addListener(
     // temporary listener created in openApprovalPopup().
     // Returning false tells Chrome this listener won't send a response,
     // so the other listener's sendResponse stays valid (handleConnectWallet -> openPopup -> listener).
-    if (message.type === "APPROVAL_RESPONSE") {
+    const avoidTypes = ["APPROVAL_RESPONSE", "UNLOCK_POPUP_RESPONSE"];
+    if (avoidTypes.includes(message.type)) {
       return false;
     }
 

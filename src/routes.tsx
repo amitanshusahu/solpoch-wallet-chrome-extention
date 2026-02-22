@@ -1,6 +1,6 @@
 import App from "./App";
-import BadAss from "./BadAss";
 import ConnectApprove from "./components/pages/ConnectApprove";
+import Unlock from "./components/pages/Unlock";
 
 export const routes = [
   {
@@ -12,11 +12,11 @@ export const routes = [
     element: <App />
   },
   {
-    path: '/badass',
-    element: <BadAss />
-  },
-  {
     path: '/connect',
     element: <ConnectApprove />
+  },
+  {
+    path: '/unlock',
+    element: <Unlock />
   }
 ]

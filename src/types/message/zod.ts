@@ -19,3 +19,8 @@ export const ApprovalResponseRequestSchema = z.object({
   approved: z.boolean(),
 });
 export type ApprovalResponseRequest = z.infer<typeof ApprovalResponseRequestSchema>;
+
+export const UnlockPopupResponseRequestSchema = z.object({
+  approved: z.boolean(),
+});
+export type UnlockPopupResponseRequest = z.infer<typeof UnlockPopupResponseRequestSchema>;
