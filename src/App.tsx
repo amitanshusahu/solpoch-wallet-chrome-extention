@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { sendMessage } from "./lib/utils/chrome/message";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function App() {
   const [status, setStatus] = useState<string>("Loading...");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function checkVault() {
@@ -17,28 +18,16 @@ function App() {
       } else if (exists && !isUnlocked) {
         setStatus("LOCKED");
       } else {
-        setStatus("CREATE");
+        navigate("/onboarding#?onboarding : true");
       }
     }
 
     checkVault();
   }, []);
 
-  async function handleCreate() {
-    const mnemonic = await sendMessage("VAULT_CREATE", { password });
-
-    console.log("Show mnemonic ONCE:", mnemonic);
-    setStatus("UNLOCK");
-  }
-
   async function handleUnlock() {
     const account = await sendMessage("VAULT_UNLOCK", { password });
     setStatus(`Connected: ${account.pubkey}`);
-  }
-
-  async function handleClear() {
-    await sendMessage("VAULT_CLEAR", undefined);
-    setStatus("CREATE");
   }
 
   return (
@@ -59,18 +48,11 @@ function App() {
             )
           }
 
-          {status === "CREATE" && (
-            <button onClick={handleCreate}>Create Wallet</button>
-          )}
-
           {status === "LOCKED" && (
             <button onClick={handleUnlock}>Unlock Wallet</button>
           )}
         </>
       )}
-
-      <Link to="/badass">Go to BadAss Component</Link>
-      <button onClick={handleClear} className="p-4 bg-gray-50">Logout</button>
     </div>
   );
 }

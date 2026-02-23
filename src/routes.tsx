@@ -1,6 +1,7 @@
 import App from "./App";
 import ConnectApprove from "./components/pages/ConnectApprove";
-import Unlock from "./components/pages/Unlock";
+import Onboarding from "./components/pages/Onboarding";
+import UnlockPopup from "./components/pages/UnlockPopup";
 
 export const routes = [
   {
@@ -17,6 +18,10 @@ export const routes = [
   },
   {
     path: '/unlock',
-    element: <Unlock />
+    element: <UnlockPopup />
+  },
+  {
+    path: '/onboarding',
+    element: <Onboarding />
   }
 ]
