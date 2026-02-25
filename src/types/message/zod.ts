@@ -12,6 +12,7 @@ export type VaultUnlockRequest = z.infer<typeof VaultUnlockRequestSchema>;
 
 export const ConnectWalletRequestSchema = z.object({
   origin: z.string().url("Origin must be a valid URL"),
+  logoUrl: z.string().optional(),
 });
 export type ConnectWalletRequest = z.infer<typeof ConnectWalletRequestSchema>;
 

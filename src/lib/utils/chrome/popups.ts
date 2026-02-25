@@ -1,10 +1,10 @@
 import type { MessageMap, MessageRequest, MessageResponse } from "../../../types/message";
 import { ApprovalResponseRequestSchema, UnlockPopupResponseRequestSchema } from "../../../types/message/zod";
 
-export async function openApprovalPopup(origin: string): Promise<boolean> {
-  console.log(`Opening approval popup for origin: ${origin}`);
+export async function openApprovalPopup(origin: string, logoUrl?: string): Promise<boolean> {
+  console.log(`Opening approval popup for origin: ${origin}, logoUrl: ${logoUrl}`);
   const popupWindow = await chrome.windows.create({
-    url: chrome.runtime.getURL("index.html#/connect?origin=" + origin),
+    url: chrome.runtime.getURL("index.html#/connect?origin=" + origin + (logoUrl ? "&logoUrl=" + encodeURIComponent(logoUrl) : "")),
     type: "popup",
     width: 400,
     height: 600,

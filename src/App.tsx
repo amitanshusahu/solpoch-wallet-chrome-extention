@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { sendMessage } from "./lib/utils/chrome/message";
 import { useNavigate } from "react-router-dom";
+import SafeArea from "./components/ui/layout/SafeArea";
+import { useAccountStore } from "./store";
+import Unlock from "./components/ui/home/Unlock";
 
 function App() {
-  const [status, setStatus] = useState<string>("Loading...");
-  const [password, setPassword] = useState("");
+  const [status, setStatus] = useState<"LOCKED" | "UNLOCKED">("LOCKED");
+  const setAccount = useAccountStore((state) => state.setAccount);
+  const account = useAccountStore((state) => state.account);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -14,7 +18,8 @@ function App() {
 
       if (exists && isUnlocked) {
         const activeAccount = await sendMessage("VAULT_GET_ACTIVE_ACCOUNT", undefined);
-        setStatus(`Connected: ${activeAccount?.pubkey}`);
+        setAccount(activeAccount);
+        setStatus("UNLOCKED");
       } else if (exists && !isUnlocked) {
         setStatus("LOCKED");
       } else {
@@ -25,35 +30,24 @@ function App() {
     checkVault();
   }, []);
 
-  async function handleUnlock() {
-    const account = await sendMessage("VAULT_UNLOCK", { password });
-    setStatus(`Connected: ${account.pubkey}`);
+  if (status === "LOCKED") {
+    return <Unlock setStatus={setStatus} />;
   }
 
   return (
-    <div className="flex flex-col gap-4 w-75 h-75">
-      <h2>{status}</h2>
-
-      {status !== "Loading..." && (
-        <>
-          {
-            (status === "CREATE" || status === "LOCKED") && (
-              <input
-                type="password"
-                placeholder="Enter vault password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="p-2 border border-gray-300 rounded"
-              />
-            )
-          }
-
-          {status === "LOCKED" && (
-            <button onClick={handleUnlock}>Unlock Wallet</button>
-          )}
-        </>
-      )}
-    </div>
+    <SafeArea>
+      <div>
+        <h2>{status}</h2>
+        <h2>{account?.pubkey}</h2>
+      </div>
+      <div className="flex gap-2">
+        <div>1</div>
+        <div>1</div>
+        <div>1</div>
+        <div>1</div>
+      </div>
+      <div>token</div>
+    </SafeArea>
   );
 }
 

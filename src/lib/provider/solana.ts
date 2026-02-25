@@ -15,7 +15,13 @@ export class ProviderSolana implements Solpoch {
 
   async connect(_options?: { onlyIfTrusted?: boolean }): Promise<{ publicKey: PublicKey }> {
     try {
-      const response = await sendWindowMessage('CONNECT_WALLET', { origin: window.location.origin });
+      const favicon = document.querySelector('link[rel*="icon"]') || document.querySelector('link[rel="shortcut icon"]');
+      let logoUrl;
+      if (favicon && favicon instanceof HTMLLinkElement) {
+        logoUrl = window.location.origin + favicon.getAttribute('href');
+        console.log('Found favicon for origin', window.location.origin, 'favicon url:', logoUrl);
+      }
+      const response = await sendWindowMessage('CONNECT_WALLET', { origin: window.location.origin, logoUrl });
       this._publicKey = new PublicKey(response.publicKey);
       this._emit('connect');
       return { publicKey: this._publicKey };

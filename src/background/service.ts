@@ -6,7 +6,7 @@ import type { MessageRequest, MessageResponse } from "../types/message";
 export async function handleConnectWallet(
   payload: MessageRequest<"CONNECT_WALLET">["payload"],
 ): Promise<MessageResponse<"CONNECT_WALLET">> {
-  const { origin } = payload;
+  const { origin, logoUrl } = payload;
   console.log(`Received CONNECT_WALLET request from origin: ${origin}`);
 
   const vaultExists = await vaultService.exists();
@@ -23,7 +23,7 @@ export async function handleConnectWallet(
     }
   }
 
-  const userApproval = await openApprovalPopup(origin);
+  const userApproval = await openApprovalPopup(origin, logoUrl);
 
   if (!userApproval) {
     console.error(`User rejected the connection request from origin: ${origin}`);

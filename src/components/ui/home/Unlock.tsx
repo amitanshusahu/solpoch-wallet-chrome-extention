@@ -1,22 +1,27 @@
 import { useState, type ChangeEvent } from "react";
-import { sendMessage } from "../../lib/utils/chrome/message";
-import SafeArea from "../ui/layout/SafeArea";
+import SafeArea from "../layout/SafeArea";
 import { InfoIcon, LockIcon } from "@phosphor-icons/react";
+import { useAccountStore } from "../../../store";
+import { sendMessage } from "../../../lib/utils/chrome/message";
 
-export default function Unlock() {
+export default function Unlock({
+  setStatus,
+}: {
+  setStatus: (status: "LOCKED" | "UNLOCKED") => void;
+}) {
+  const setAccount = useAccountStore((state) => state.setAccount);
   const [password, setPassword] = useState("");
   const [infoText, setInfoText] = useState("Your password is required to access your wallet.");
-
   const handelPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
   }
-
-  const handleUnlock = async () => {
+  async function handleUnlock(password: string) {
     try {
-      await sendMessage("VAULT_UNLOCK", { password });
-      await sendMessage("UNLOCK_POPUP_RESPONSE", { approved: true });
+      const account = await sendMessage("VAULT_UNLOCK", { password });
+      setAccount(account);
+      setStatus("UNLOCKED");
     } catch (error) {
-      setInfoText("Failed to unlock vault: " + (error as Error).message);
+      setInfoText("Incorrect password. Please try again.");
     }
   }
 
@@ -53,7 +58,7 @@ export default function Unlock() {
         <button
           className="px-4 py-2 bg-primary rounded-full text-white font-semibold w-full text-center text-xs inset-top mt-3 disabled:bg-primary/50"
           disabled={password.length < 8}
-          onClick={() => handleUnlock()}
+          onClick={() => handleUnlock(password)}
         >
           Unlock Wallet
         </button>
