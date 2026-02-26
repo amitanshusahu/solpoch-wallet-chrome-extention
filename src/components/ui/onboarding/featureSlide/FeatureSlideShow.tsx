@@ -17,7 +17,7 @@ export default function FeatureSlideShow({
     }
   }
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-bg p-8">
+    <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-bg p-8 bg-img">
       <div className="w-fit h-fit mt-10">
         <img src="/logo-long.png" alt="Solpoch Logo" className="h-[24px]"/>
       </div>

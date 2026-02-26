@@ -26,7 +26,8 @@
 - BIP39 internals
 - SLIP-0010
 - ed25519 math
-- Web Crypto API / libsodium
-- Extension security model (ui:sendMessage <-> background:listenMessage <-> vault actions )
+- Web Crypto API / libsodium (wasn't able to make libsodium-wsam work due to chrome's content security policys)
+- Extension security model (extention ui:sendMessage <-> background:listenMessage <-> vault actions )
+- Injected Script Security (injected script/ provided:sendWindowMessage <-> content script <-> background:listenMessage <-> vault actions)
 - Wallet Standard injection (content script -> injected script -> @wallet-standard/wallet.md)
 - RPC simulation + preflight

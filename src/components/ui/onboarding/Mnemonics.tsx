@@ -1,4 +1,4 @@
-import { CopyIcon, InfoIcon } from "@phosphor-icons/react"
+import { DownloadSimpleIcon, InfoIcon } from "@phosphor-icons/react"
 import { useEffect, useState } from "react";
 import { sendMessage } from "../../../lib/utils/chrome/message";
 export default function Mnemonics({
@@ -10,7 +10,6 @@ export default function Mnemonics({
 }) {
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined);
   const [mnemonicAcknowledged, setMnemonicAcknowledged] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     async function createVaultAndGetMnemonic() {
@@ -28,13 +27,14 @@ export default function Mnemonics({
     };
   }, []);
 
-  const handleClipboardCopy = async () => {
-    await navigator.clipboard.writeText(mnemonic || "");
-    setCopied(true);
-    setTimeout(() => {
-      navigator.clipboard.writeText("");
-      setCopied(false);
-    }, 3000);
+  const handleDownload = () => {
+    const blob = new Blob([mnemonic || ""], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "secret.private";
+    a.click();
+    URL.revokeObjectURL(url);
   }
   const handleNext = () => {
     goNextStep();
@@ -55,10 +55,11 @@ export default function Mnemonics({
 
         <button
           className="text-xs text-gray-400 p-3 w-full text-center mt-2 flex gap-2 justify-center items-center"
-          onClick={handleClipboardCopy}
+          onClick={handleDownload}
+          disabled={!mnemonic}
         >
-          <CopyIcon size={14} />
-          {copied ? "Copied!" : "Copy to clipboard"}
+          <DownloadSimpleIcon size={14} />
+          Download secret.private
         </button>
 
         <div className="rounded bg-primary/20 p-4 mt-4 flex gap-2">
