@@ -71,10 +71,11 @@ function App() {
               <div className="flex flex-col justify-center items-center">
                 <button
                   className="flex bg-white/20 text-sm rounded-full justify-center items-center w-16 h-16 inset-top-light"
+                  onClick={() => navigate("/recieve")}
                 >
                   <ArrowDownLeftIcon size={24} weight="bold" className="mr-1" />
                 </button>
-                <span className="text-xs mt-1 text-gray-400">Recive</span>
+                <span className="text-xs mt-1 text-gray-400">Recieve</span>
               </div>
               <div className="flex flex-col justify-center items-center">
                 <button

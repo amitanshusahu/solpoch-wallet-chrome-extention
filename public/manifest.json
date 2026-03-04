@@ -5,7 +5,7 @@
   "manifest_version": 3,
   "action": {
     "default_popup": "index.html",
-    "default_icon": "vite.svg"
+    "default_icon": "logo.png"
   },
   "background": {
     "service_worker": "js/background.js",
