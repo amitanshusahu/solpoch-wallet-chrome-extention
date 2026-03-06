@@ -1,6 +1,7 @@
 import { vaultService } from "../vault/service";
 import { openApprovalPopup, openUnlockPopup } from "../../utils/chrome/popups";
 import type { MessageRequest, MessageResponse } from "../../../types/message";
+import { WalletSessionService } from "./session.service";
 
 
 export async function handleConnectWallet(
@@ -14,7 +15,7 @@ export async function handleConnectWallet(
     console.error("No vault found. Rejecting connection request.");
     throw new Error("Vault does not exist. Please create a vault first.");
   }
-  const isUnlocked = await vaultService.getIsUnlocked();
+  const isUnlocked = await WalletSessionService.getUnlocked();
   if (!isUnlocked) {
     const userUnlocked = await openUnlockPopup();
     if (!userUnlocked) {

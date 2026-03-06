@@ -3,10 +3,9 @@ import { generateMnemonic } from "bip39";
 import { keypairFromMnemonic, publicKeyFromMnemonic } from "../derivation";
 import type { Account, VaultDataV1 } from "../../../types/vault";
 import type { Transaction } from "@solana/web3.js";
+import { WalletSessionService } from "../walletService/session.service";
 
 export class Vault {
-
-  private isUnlocked: boolean = false;
 
   private async getVaultData(): Promise<VaultDataV1> {
     const { vault } = await chrome.storage.local.get("vault") as { vault: VaultDataV1 };
@@ -30,6 +29,15 @@ export class Vault {
     const data = await this.getVaultData();
     return !!data;
   }
+  
+  async getIsUnlocked(): Promise<boolean> {
+    return WalletSessionService.getUnlocked();
+  }
+
+  async lock() {
+    await WalletSessionService.setUnlocked(false);
+  }
+
 
   async create(password: string): Promise<string> {
     const mnemonic = generateMnemonic();
@@ -53,7 +61,7 @@ export class Vault {
     if (!isPasswordCorrect) {
       throw new Error("Incorrect password");
     }
-    this.isUnlocked = true;
+    await WalletSessionService.setUnlocked(true);
     return vaultData.accounts[vaultData.activeAccountIndex];
   }
 
@@ -64,19 +72,12 @@ export class Vault {
 
   async clear() {
     await this.cleanStorage();
-    this.isUnlocked = false;
-  }
-
-  async lock() {
-    this.isUnlocked = false;
-  }
-
-  async getIsUnlocked(): Promise<boolean> {
-    return this.isUnlocked;
+    await WalletSessionService.clearSession();
   }
 
   async signTransaction(tx: Transaction, password: string): Promise<Transaction> {
-    if (!this.isUnlocked) {
+    const isUnlocked = await this.getIsUnlocked();
+    if (!isUnlocked) {
       throw new Error("Vault locked")
     }
     const mnemonic = await this.decryptMnemonicFromPassword(password);
