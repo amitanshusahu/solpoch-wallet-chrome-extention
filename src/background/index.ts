@@ -1,6 +1,7 @@
 /// <reference types="chrome" />
 
 import { vaultService } from "../lib/core/vault/service";
+import { handleConnectWallet } from "../lib/core/walletService/user.service";
 import {
   type MessageMap,
   type MessageRequest,
@@ -9,9 +10,9 @@ import {
 import {
   VaultCreateRequestSchema,
   VaultUnlockRequestSchema,
-  ConnectWalletRequestSchema
+  ConnectWalletRequestSchema,
+  SendTransactionRequestResponseSchema
 } from "../types/message/zod";
-import { handleConnectWallet } from "./service";
 
 
 chrome.runtime.onMessage.addListener(
@@ -33,7 +34,7 @@ chrome.runtime.onMessage.addListener(
     (async () => {
       try {
         switch (message.type) {
-          case "LOGGER" : {
+          case "LOGGER": {
             console.log("Logger Message from Content Script:", message.payload);
             sendResponse({
               success: true,
@@ -106,6 +107,17 @@ chrome.runtime.onMessage.addListener(
               success: response.success,
               data: response.data,
               error: response?.error
+            });
+            break;
+          }
+
+          case "SIGN_AND_SEND_TRANSACTION": {
+            const payload = SendTransactionRequestResponseSchema.parse(message.payload);
+            const response = "lskdflkd";
+            sendResponse({
+              success: true,
+              data: response,
+              error: response,
             });
             break;
           }

@@ -1,5 +1,5 @@
 import type { Account } from "../vault";
-import type { ApprovalResponseRequest, ConnectWalletRequest, UnlockPopupResponseRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
+import type { ApprovalResponseRequest, ConnectWalletRequest, SendTransactionRequestResponse, UnlockPopupResponseRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
 
 export type MessageMap = {
   VAULT_EXISTS: {
@@ -50,6 +50,11 @@ export type MessageMap = {
   UNLOCK_POPUP_RESPONSE: {
     req: UnlockPopupResponseRequest;
     res: null;
+  }
+
+  SIGN_AND_SEND_TRANSACTION: {
+    req: SendTransactionRequestResponse;
+    res: string; // transaction signature
   }
 };
 

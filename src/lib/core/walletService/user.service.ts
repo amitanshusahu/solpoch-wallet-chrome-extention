@@ -1,6 +1,6 @@
-import { vaultService } from "../lib/core/vault/service";
-import { openApprovalPopup, openUnlockPopup } from "../lib/utils/chrome/popups";
-import type { MessageRequest, MessageResponse } from "../types/message";
+import { vaultService } from "../vault/service";
+import { openApprovalPopup, openUnlockPopup } from "../../utils/chrome/popups";
+import type { MessageRequest, MessageResponse } from "../../../types/message";
 
 
 export async function handleConnectWallet(

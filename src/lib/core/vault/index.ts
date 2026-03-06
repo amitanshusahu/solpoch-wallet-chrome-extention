@@ -1,7 +1,8 @@
-import { checkPassword, encryptMnemonic } from "../crypto";
+import { checkPassword, decryptMnemonic, encryptMnemonic } from "../crypto";
 import { generateMnemonic } from "bip39";
-import { keypairFromMnemonic } from "../derivation";
+import { keypairFromMnemonic, publicKeyFromMnemonic } from "../derivation";
 import type { Account, VaultDataV1 } from "../../../types/vault";
+import type { Transaction } from "@solana/web3.js";
 
 export class Vault {
 
@@ -20,6 +21,11 @@ export class Vault {
     await chrome.storage.local.remove("vault");
   }
 
+  private async decryptMnemonicFromPassword(password: string): Promise<string> {
+    const vaultData = await this.getVaultData();
+    return await decryptMnemonic(vaultData.encryptedMnemonic, password);
+  }
+
   async exists(): Promise<boolean> {
     const data = await this.getVaultData();
     return !!data;
@@ -28,7 +34,7 @@ export class Vault {
   async create(password: string): Promise<string> {
     const mnemonic = generateMnemonic();
     const encryptedMnemonic = await encryptMnemonic(mnemonic, password);
-    const keypair = keypairFromMnemonic(mnemonic, 0);
+    const keypair = publicKeyFromMnemonic(mnemonic, 0);
     console.log("keypair from mnemonic:", keypair);
     const vaultData: VaultDataV1 = {
       encryptedMnemonic: encryptedMnemonic,
@@ -67,6 +73,16 @@ export class Vault {
 
   async getIsUnlocked(): Promise<boolean> {
     return this.isUnlocked;
+  }
+
+  async signTransaction(tx: Transaction, password: string): Promise<Transaction> {
+    if (!this.isUnlocked) {
+      throw new Error("Vault locked")
+    }
+    const mnemonic = await this.decryptMnemonicFromPassword(password);
+    const keypair = keypairFromMnemonic(mnemonic, 0)
+    tx.sign(keypair)
+    return tx
   }
 
 }

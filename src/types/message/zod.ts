@@ -25,3 +25,15 @@ export const UnlockPopupResponseRequestSchema = z.object({
   approved: z.boolean(),
 });
 export type UnlockPopupResponseRequest = z.infer<typeof UnlockPopupResponseRequestSchema>;
+
+export const SendTransactionRequestSchema = z.object({
+  to: z.string().min(1, "Recipient address is required"),
+  amount: z.number().positive("Amount must be a positive number"),
+});
+export type SendTransactionRequest = z.infer<typeof SendTransactionRequestSchema>;
+
+export const SendTransactionRequestResponseSchema = z.object({
+  success: z.boolean(),
+  error: z.string().optional(),
+});
+export type SendTransactionRequestResponse = z.infer<typeof SendTransactionRequestResponseSchema>;

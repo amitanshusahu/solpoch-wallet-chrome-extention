@@ -2,6 +2,7 @@ import App from "./App";
 import ConnectApprove from "./components/pages/ConnectApprove";
 import Onboarding from "./components/pages/Onboarding";
 import Recieve from "./components/pages/Recieve";
+import Send from "./components/pages/Send";
 import UnlockPopup from "./components/pages/UnlockPopup";
 
 export const routes = [
@@ -28,5 +29,9 @@ export const routes = [
   {
     path: '/recieve',
     element: <Recieve />
+  },
+  {
+    path: '/send',
+    element: <Send />
   }
 ]
