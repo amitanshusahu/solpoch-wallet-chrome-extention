@@ -10,7 +10,7 @@ export default defineConfig({
     minify: false,
     rollupOptions: {
       input: {
-        inject: 'src/inject/index.ts',
+        inject: 'src/scripts/inject/index.ts',
       },
       output: [
         {

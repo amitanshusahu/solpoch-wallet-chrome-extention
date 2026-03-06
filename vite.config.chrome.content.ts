@@ -10,7 +10,7 @@ export default defineConfig({
     minify: false,
     rollupOptions: {
       input: {
-        content: 'src/content/index.ts',
+        content: 'src/scripts/content/index.ts',
       },
       output: [
         {

@@ -1,18 +1,18 @@
 /// <reference types="chrome" />
 
-import { vaultService } from "../lib/core/vault/service";
-import { handleConnectWallet } from "../lib/core/walletService/user.service";
+import { vaultService } from "../../lib/core/vault/service";
+import { handleConnectWallet } from "../../lib/core/walletService/user.service";
 import {
   type MessageMap,
   type MessageRequest,
   type MessageResponse
-} from "../types/message";
+} from "../../types/message";
 import {
   VaultCreateRequestSchema,
   VaultUnlockRequestSchema,
   ConnectWalletRequestSchema,
   SendTransactionRequestResponseSchema
-} from "../types/message/zod";
+} from "../../types/message/zod";
 
 
 chrome.runtime.onMessage.addListener(

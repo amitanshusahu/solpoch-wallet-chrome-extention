@@ -1,4 +1,4 @@
-import { sendMessage } from "../lib/utils/chrome/message";
+import { sendMessage } from "../../lib/utils/chrome/message";
 
 function injectScript() {
   try {
