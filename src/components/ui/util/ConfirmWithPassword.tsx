@@ -30,7 +30,7 @@ export default function ConfirmWithPassword({
 
   return (
     <div className="w-full h-full bg-bg flex flex-col justify-between items-center">
-      <div className="h-full flex flex-col justify-center items-center">
+      <div className="h-full flex flex-col justify-center items-center w-full">
         <div className="flex items-center justify-center pb-16">
           {/* <img src="/logo-long.png" alt="logo" className="h-[50px]" /> */}
           <div className="flex flex-col items-center gap-2">
@@ -40,7 +40,7 @@ export default function ConfirmWithPassword({
             <p className="text-xs text-gray-400 mt-1">just to be extra sure that it's you</p>
           </div>
         </div>
-        <div>
+        <div className="w-full flex flex-col">
           <div className="flex gap-2">
             <LockIcon size={16} className="text-gray-400" />
             <h1 className="text-sm mb-2 font-bold">Enter Unlock Pin</h1>

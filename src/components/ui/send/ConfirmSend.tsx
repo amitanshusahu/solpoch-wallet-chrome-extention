@@ -19,7 +19,8 @@ export default function ConfirmSend({
   const [password, setPassword] = useState<string>("");
   const [confimedWithPassword, setConfimedWithPassword] = useState(false);
   const navigate = useNavigate();
-  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const [canSend, setCanSend] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [signature, setSignature] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,12 +33,10 @@ export default function ConfirmSend({
           password: password
         });
         setSimulationResult(response);
-        if (!response?.err) {
-          setButtonDisabled(false);
-        }
+        setCanSend(!response?.err);
       } catch (error) {
         console.error("Simulation error:", error);
-        setButtonDisabled(true);
+        setCanSend(false);
       } finally {
         setSimulating(false);
       }
@@ -48,10 +47,11 @@ export default function ConfirmSend({
   }, [toAddress, amount, confimedWithPassword]);
 
   const handleSend = async () => {
-    setButtonDisabled(true);
-    if(password.length === 0) {
+    setCanSend(false);
+    setIsSending(true);
+    if (password.length === 0) {
       setConfimedWithPassword(false);
-      setButtonDisabled(false);
+      setIsSending(false);
       return;
     }
     try {
@@ -64,11 +64,44 @@ export default function ConfirmSend({
       console.log("Send response:", response);
     } catch (error) {
       console.error("Send error:", error);
+    } finally {
+      setIsSending(false);
     }
   }
 
   if (!confimedWithPassword) {
     return <ConfirmWithPassword password={password} setPassword={setPassword} setConfimedWithPassword={setConfimedWithPassword} />
+  }
+
+  if (signature) {
+    return (
+      <div className="flex flex-col justify-center items-center h-full gap-4">
+        <img src="/logo.png" alt="Solana Logo" className="h-10 w-10" />
+        <div className="text-center">
+          <p className="text-sm text-gray-200">Transaction sent successfully!</p>
+          <a href={`https://explorer.solana.com/tx/${signature}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="text-xs text-primary mt-1 block">
+            View on Solana Explorer
+          </a>
+          {/* <a href={`https://solscan.io/tx/${signature}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="text-xs text-primary mt-1 block">
+            View on Solscan
+          </a> */}
+        </div>
+      </div>
+    )
+  }
+
+  if (isSending) {
+    return (
+      <div className="flex flex-col justify-center items-center h-full gap-4">
+        <p className="text-sm text-gray-200">Sending transaction...</p>
+        <div className="relative">
+          <div className="border-t-4 border-primary rounded-full p-2  animate-spin">
+            <div className="h-20 w-20"></div>
+          </div>
+          <img src="/logo.png" alt="Solana Logo" className="h-10 w-10 absolute top-7 left-7" />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -79,14 +112,14 @@ export default function ConfirmSend({
           <img src="/solana-logo.png" alt="Solana Logo" className="h-10 w-10" />
         </div>
         {
-          simulating ? (
+          (simulating && !signature) ? (
             <p>Simulating transaction...</p>
           ) : simulationResult ? (
             simulationResult.err ? (
               <p className="text-red-500">Simulation failed: {JSON.stringify(simulationResult.err)}</p>
             ) : (
               <>
-                <p className="text-green-500">Simulation successful! Transaction is likely to succeed.</p>
+                <p className="text-green-500 text-xs mb-2">Simulation successful! Transaction is likely to succeed.</p>
                 <div className="w-full bg-white/5 p-4 rounded-lg flex flex-col">
                   <div className="flex justify-between w-full gap-4">
                     <span className="text-xs text-gray-400">To</span>
@@ -107,16 +140,6 @@ export default function ConfirmSend({
             <p>Ready to simulate transaction.</p>
           )
         }
-        {
-          signature ? (
-            <div className="mt-4 p-4 bg-white/5 rounded-lg">
-              <p className="text-sm text-gray-200">Transaction sent successfully!</p>
-              <a href={`https://explorer.solana.com/tx/${signature}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="text-xs text-primary mt-1 block">
-                View on Solana Explorer
-              </a>
-            </div>
-          ) : null
-        }
       </div>
       {
         !signature ? (
@@ -131,7 +154,7 @@ export default function ConfirmSend({
             </button>
             <button
               className="px-4 py-2 bg-primary rounded-full text-white font-semibold w-full text-xs inset-top mt-3 disabled:bg-primary/50 flex gap-2 justify-center items-center"
-              disabled={!toAddress || !amount || simulating || (simulationResult ? !!simulationResult.err : false) || buttonDisabled}
+              disabled={!toAddress || !amount || simulating || !canSend}
               onClick={handleSend}
             >
               <CheckIcon size={14} weight="bold" className="text-gray-200" />

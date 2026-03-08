@@ -114,7 +114,7 @@ chrome.runtime.onMessage.addListener(
 
           case "SIGN_AND_SEND_TRANSACTION": {
             const payload = SendTransactionRequestSchema.parse(message.payload);
-            const response = await TransactionService.sendSol(payload.to, payload.amount, payload.password);
+            const response = await TransactionService.sendTransaction(payload.to, payload.amount, payload.password);
             sendResponse({
               success: response.success,
               data: response.data,

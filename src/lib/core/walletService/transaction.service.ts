@@ -41,7 +41,7 @@ export abstract class TransactionService {
     console.log("Simulation result:", simulation)
     return {
       success: true,
-      data: simulation.value
+      data: simulation.value,
     }
   }
 
