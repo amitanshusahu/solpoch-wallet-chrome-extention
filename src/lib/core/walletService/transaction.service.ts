@@ -1,31 +1,11 @@
-// buildTransaction()
-//    ├── simulateTransaction()
-//    └── signAndSend()
-//            │
-//            ▼
-//         vault.signTransaction()
-//            │
-//            ▼
-//         rpcClient.broadcast()
-
-import { PublicKey, SystemProgram, Transaction, VersionedTransaction, type SimulateTransactionConfig } from "@solana/web3.js"
+import { PublicKey, SystemProgram, Transaction, type SimulateTransactionConfig } from "@solana/web3.js"
 import { vaultService } from "../vault/service"
 import type { MessageResponse } from "../../../types/message"
-import { rpcConnection } from "../../rpc"
+import { RpcService } from "../../rpc"
 
-// methods i would need to work
-// simulateTransaction(tx)
-// signTransaction(tx)
-// signAllTransactions(tx[])
-// sendTransaction(tx)
+export abstract class TransactionService {
 
-export class TransactionService {
-
-  static async simulateTransaction(
-    to: string,
-    amount: number,
-    password: string
-  ): Promise<MessageResponse<"SIMULATE_TRANSACTION">> {
+  private static async buildTransaction(to: string, amount: number): Promise<{ tx: Transaction; publicKey: string }> {
     const account = await vaultService.getActiveAccount()
     const tx = new Transaction().add(
       SystemProgram.transfer({
@@ -35,14 +15,29 @@ export class TransactionService {
       })
     )
 
-    const { blockhash } = await rpcConnection.getLatestBlockhash()
-    tx.recentBlockhash = blockhash
-    tx.feePayer = new PublicKey(account.pubkey)
+    return { tx, publicKey: account.pubkey }
+  }
 
+  private static async signTransaction(tx: Transaction, password: string): Promise<Transaction> {
     const signedTx = await vaultService.signTransaction(tx, password)
-    const versionedTx = new VersionedTransaction(signedTx.compileMessage())
+    return signedTx
+  }
+
+  static async simulateTransaction(
+    to: string,
+    amount: number,
+    password: string
+  ): Promise<MessageResponse<"SIMULATE_TRANSACTION">> {
+    const { tx, publicKey } = await this.buildTransaction(to, amount);
+
+    const { blockhash } = await RpcService.getLatestBlockhash()
+    tx.recentBlockhash = blockhash
+    tx.feePayer = new PublicKey(publicKey)
+
+    const signedTx = await this.signTransaction(tx, password)
     const config: SimulateTransactionConfig = { commitment: "confirmed" }
-    const simulation = await rpcConnection.simulateTransaction(versionedTx, config);
+    const simulation = await RpcService.simulateTransaction(signedTx, config);
+
     console.log("Simulation result:", simulation)
     return {
       success: true,
@@ -50,36 +45,20 @@ export class TransactionService {
     }
   }
 
-  static async sendSol(
+  static async sendTransaction(
     to: string,
     amount: number,
     password: string
   ): Promise<MessageResponse<"SIGN_AND_SEND_TRANSACTION">> {
-    const account = await vaultService.getActiveAccount()
-    const tx = new Transaction().add(
-      SystemProgram.transfer({
-        fromPubkey: new PublicKey(account.pubkey),
-        toPubkey: new PublicKey(to),
-        lamports: amount
-      })
-    )
+    const { tx, publicKey } = await this.buildTransaction(to, amount)
 
-    const { blockhash, lastValidBlockHeight } = await rpcConnection.getLatestBlockhash()
+    const { blockhash, lastValidBlockHeight } = await RpcService.getLatestBlockhash()
     tx.recentBlockhash = blockhash
-    tx.feePayer = new PublicKey(account.pubkey)
+    tx.feePayer = new PublicKey(publicKey)
 
-    const signedTx = await vaultService.signTransaction(tx, password)
+    const signedTx = await this.signTransaction(tx, password)
+    const signature = await RpcService.sendRawTransaction(signedTx)
 
-    const signature = await rpcConnection.sendRawTransaction(
-      signedTx.serialize(),
-      {
-        maxRetries: 3
-      }
-    )
-
-    // Poll for confirmation instead of using confirmTransaction()
-    // because confirmTransaction() uses WebSockets internally and
-    // `window` is not available in Chrome extension service workers (MV3).
     const confirmed = await this.pollForConfirmation(
       signature,
       lastValidBlockHeight
@@ -102,18 +81,20 @@ export class TransactionService {
   }
 
   /**
-   * Polls getSignatureStatuses() over HTTP instead of using WebSocket-based
-   * confirmTransaction(), which crashes in MV3 service workers because
-   * `window` is not defined.
-   */
+   * NOTE: for future me
+    polls getSignatureStatuses() instead of confirmTransaction(), 
+    which crashes in MV3 service workers because it uses window object internally
+    for a websocket connection. (error window is not defined)
+   **/
+  // TODO: implement transaction mannager that will track a queue of pending transactions
+  // in indexdb, and then a background process will do the polling and update the status of transaction in queue, so that we can show pending/confirmed/failed status in UI without relying on user to keep the tab open until transaction is confirmed.
   private static async pollForConfirmation(
     signature: string,
     lastValidBlockHeight: number,
     intervalMs = 2000
   ): Promise<{ success: boolean; error?: string }> {
-    // eslint-disable-next-line no-constant-condition
     while (true) {
-      const { value } = await rpcConnection.getSignatureStatuses([signature]);
+      const { value } = await RpcService.getSignatureStatuses([signature]);
       const status = value?.[0];
 
       if (status) {
@@ -130,7 +111,7 @@ export class TransactionService {
       }
 
       // Check if the blockhash has expired
-      const blockHeight = await rpcConnection.getBlockHeight();
+      const blockHeight = await RpcService.getBlockHeight();
       if (blockHeight > lastValidBlockHeight) {
         return {
           success: false,
