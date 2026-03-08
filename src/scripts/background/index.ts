@@ -2,7 +2,7 @@
 
 import { vaultService } from "../../lib/core/vault/service";
 import { TransactionService } from "../../lib/core/walletService/transaction.service";
-import { handleConnectWallet } from "../../lib/core/walletService/user.service";
+import { handleConnectWallet, handleSignAndSendTransaction } from "../../lib/core/walletService/daap.service";
 import {
   type MessageMap,
   type MessageRequest,
@@ -12,7 +12,8 @@ import {
   VaultCreateRequestSchema,
   VaultUnlockRequestSchema,
   ConnectWalletRequestSchema,
-  SendTransactionRequestSchema
+  SendTransactionRequestSchema,
+  PopupSignAndSendTransactionSchema
 } from "../../types/message/zod";
 
 
@@ -27,7 +28,7 @@ chrome.runtime.onMessage.addListener(
     // temporary listener created in openApprovalPopup().
     // Returning false tells Chrome this listener won't send a response,
     // so the other listener's sendResponse stays valid (handleConnectWallet -> openPopup -> listener).
-    const avoidTypes = ["APPROVAL_RESPONSE", "UNLOCK_POPUP_RESPONSE"];
+    const avoidTypes = ["APPROVAL_RESPONSE", "UNLOCK_POPUP_RESPONSE", "POPUP_SIGN_AND_SEND_APPROVAL_RESPONSE"] as (keyof MessageMap)[];
     if (avoidTypes.includes(message.type)) {
       return false;
     }
@@ -112,6 +113,17 @@ chrome.runtime.onMessage.addListener(
             break;
           }
 
+          case "POPUP_SIGN_AND_SEND_TRANSACTION": {
+            const payload = PopupSignAndSendTransactionSchema.parse(message.payload);
+            const response = await handleSignAndSendTransaction(payload);
+            sendResponse({
+              success: response.success,
+              data: response.data,
+              error: response?.error,
+            });
+            break;
+          }
+
           case "SIGN_AND_SEND_TRANSACTION": {
             const payload = SendTransactionRequestSchema.parse(message.payload);
             const response = await TransactionService.sendTransaction(payload.to, payload.amount, payload.password);
@@ -133,6 +145,7 @@ chrome.runtime.onMessage.addListener(
             });
             break;
           }
+
         }
       } catch (err) {
         sendResponse({

@@ -32,3 +32,31 @@ export const SendTransactionRequestSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters long"),
 });
 export type SendTransactionRequest = z.infer<typeof SendTransactionRequestSchema>;
+
+export const PopupSignAndSendTransactionSchema = z.object({
+  metadata: z.object({
+    origin: z.string().url("Origin must be a valid URL"),
+    favicon: z.string().optional(),
+  }),
+  params: z.object({
+    transaction: z.array(z.number()),
+    options: z.object({
+      skipPreflight: z.boolean().optional(),
+      preflightCommitment: z.string().optional(),
+      maxRetries: z.number().optional(),
+      minContextSlot: z.number().optional(),
+    }).optional(),
+  }),
+});
+export type PopupSignAndSendTransactionRequest = z.infer<typeof PopupSignAndSendTransactionSchema>;
+
+export const SigninAndSendUsingTransactionRequestSchema = z.object({
+  transaction: z.array(z.number()),
+  options: z.object({
+    skipPreflight: z.boolean().optional(),
+    preflightCommitment: z.string().optional(),
+    maxRetries: z.number().optional(),
+    minContextSlot: z.number().optional(),
+  }).optional(),
+});
+export type SignAndSendUsingTransactionRequest = z.infer<typeof SigninAndSendUsingTransactionRequestSchema>;

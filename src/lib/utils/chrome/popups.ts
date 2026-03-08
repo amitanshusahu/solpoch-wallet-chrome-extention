@@ -101,3 +101,51 @@ export async function openUnlockPopup(): Promise<boolean> {
     });
   })
 }
+
+
+export async function openSignAndSendPopup(payload: MessageRequest<"POPUP_SIGN_AND_SEND_TRANSACTION">["payload"]): Promise<boolean> {
+  const popupWindow = await chrome.windows.create({
+    url: chrome.runtime.getURL("index.html#/sign-and-send-approval?origin=" + payload.metadata.origin + (payload.metadata.favicon ? "&logoUrl=" + encodeURIComponent(payload.metadata.favicon) : "")),
+    type: "popup",
+    width: 400,
+    height: 600,
+  });
+
+  return new Promise((resolve) => {
+    const messageHandler = <T extends keyof MessageMap>(
+      message: MessageRequest<T>,
+      _sender: chrome.runtime.MessageSender,
+      sendResponse: (res: MessageResponse<T>) => void
+    ): boolean => {
+      if (message.type === "POPUP_SIGN_AND_SEND_APPROVAL_RESPONSE") {
+        const payload = UnlockPopupResponseRequestSchema.parse(message.payload);
+        chrome.runtime.onMessage.removeListener(messageHandler);
+
+        if (popupWindow) {
+          if (popupWindow.id) {
+            chrome.windows.remove(popupWindow.id);
+          }
+        }
+        resolve(payload.approved);
+        sendResponse({
+          success: true,
+          data: null
+        });
+      }
+      return true;
+    };
+
+    chrome.runtime.onMessage.addListener(messageHandler);
+
+    // if popup is closed without response, reject the promise
+    chrome.windows.onRemoved.addListener(function onWindowRemoved(windowId) {
+      if (popupWindow) {
+        if (windowId === popupWindow.id) {
+          chrome.windows.onRemoved.removeListener(onWindowRemoved);
+          chrome.runtime.onMessage.removeListener(messageHandler);
+          resolve(false);
+        }
+      }
+    });
+  })
+}

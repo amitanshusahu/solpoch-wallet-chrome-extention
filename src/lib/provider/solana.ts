@@ -3,6 +3,7 @@ import type { Transaction, SendOptions, TransactionSignature } from '@solana/web
 import type { SolanaSignInInput, SolanaSignInOutput } from '@solana/wallet-standard-features';
 import type { Solpoch, SolpochEvent } from '../solpoch-wallet-standard/window.ts';
 import { sendWindowMessage } from '../utils/chrome/message.ts';
+import { getLogoUrl } from '../utils/dom/getLogoUrl.ts';
 
 
 export class ProviderSolana implements Solpoch {
@@ -15,12 +16,7 @@ export class ProviderSolana implements Solpoch {
 
   async connect(_options?: { onlyIfTrusted?: boolean }): Promise<{ publicKey: PublicKey }> {
     try {
-      const favicon = document.querySelector('link[rel*="icon"]') || document.querySelector('link[rel="shortcut icon"]');
-      let logoUrl;
-      if (favicon && favicon instanceof HTMLLinkElement) {
-        logoUrl = window.location.origin + favicon.getAttribute('href');
-        console.log('Found favicon for origin', window.location.origin, 'favicon url:', logoUrl);
-      }
+      const logoUrl = getLogoUrl();
       const response = await sendWindowMessage('CONNECT_WALLET', { origin: window.location.origin, logoUrl });
       this._publicKey = new PublicKey(response.publicKey);
       this._emit('connect');
@@ -42,7 +38,29 @@ export class ProviderSolana implements Solpoch {
     _transaction: T,
     _options?: SendOptions
   ): Promise<{ signature: TransactionSignature }> {
-    throw new Error('signAndSendTransaction is not implemented yet');
+    try {
+      const logoUrl = getLogoUrl();
+      const serializedTx = _transaction.serialize({
+        requireAllSignatures: false,
+        verifySignatures: false
+      });
+      const payload = {
+        metadata: {
+          origin: window.location.origin,
+          favicon: logoUrl
+        },
+        params: {
+          transaction: Array.from(serializedTx),
+          options: _options
+        }
+      };
+      const response = await sendWindowMessage("POPUP_SIGN_AND_SEND_TRANSACTION", payload);
+      return {
+        signature: response.signature
+      };
+    } catch (error) {
+      throw new Error('signAndSendTransaction error: ' + error);
+    }
   }
 
   async signTransaction<T extends Transaction | VersionedTransaction>(_transaction: T): Promise<T> {
