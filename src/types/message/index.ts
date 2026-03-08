@@ -1,5 +1,6 @@
+import type { SimulatedTransactionResponse } from "@solana/web3.js";
 import type { Account } from "../vault";
-import type { ApprovalResponseRequest, ConnectWalletRequest, SendTransactionRequestResponse, UnlockPopupResponseRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
+import type { ApprovalResponseRequest, ConnectWalletRequest, SendTransactionRequest, UnlockPopupResponseRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
 
 export type MessageMap = {
   VAULT_EXISTS: {
@@ -53,8 +54,13 @@ export type MessageMap = {
   }
 
   SIGN_AND_SEND_TRANSACTION: {
-    req: SendTransactionRequestResponse;
+    req: SendTransactionRequest;
     res: string; // transaction signature
+  }
+
+  SIMULATE_TRANSACTION: {
+    req: SendTransactionRequest;
+    res: SimulatedTransactionResponse; // simulation result
   }
 };
 

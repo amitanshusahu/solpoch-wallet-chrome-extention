@@ -1,6 +1,7 @@
 /// <reference types="chrome" />
 
 import { vaultService } from "../../lib/core/vault/service";
+import { TransactionService } from "../../lib/core/walletService/transaction.service";
 import { handleConnectWallet } from "../../lib/core/walletService/user.service";
 import {
   type MessageMap,
@@ -11,7 +12,7 @@ import {
   VaultCreateRequestSchema,
   VaultUnlockRequestSchema,
   ConnectWalletRequestSchema,
-  SendTransactionRequestResponseSchema
+  SendTransactionRequestSchema
 } from "../../types/message/zod";
 
 
@@ -112,12 +113,23 @@ chrome.runtime.onMessage.addListener(
           }
 
           case "SIGN_AND_SEND_TRANSACTION": {
-            const payload = SendTransactionRequestResponseSchema.parse(message.payload);
-            const response = "lskdflkd";
+            const payload = SendTransactionRequestSchema.parse(message.payload);
+            const response = await TransactionService.sendSol(payload.to, payload.amount, payload.password);
             sendResponse({
-              success: true,
-              data: response,
-              error: response,
+              success: response.success,
+              data: response.data,
+              error: response?.error,
+            });
+            break;
+          }
+
+          case "SIMULATE_TRANSACTION": {
+            const payload = SendTransactionRequestSchema.parse(message.payload);
+            const response = await TransactionService.simulateTransaction(payload.to, payload.amount, payload.password);
+            sendResponse({
+              success: response.success,
+              data: response.data,
+              error: response?.error,
             });
             break;
           }

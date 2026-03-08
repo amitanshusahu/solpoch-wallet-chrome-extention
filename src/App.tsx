@@ -6,6 +6,9 @@ import { useAccountStore } from "./store";
 import Unlock from "./components/ui/home/Unlock";
 import ProfileAvatar from "./components/ui/home/ProfileAvatar";
 import { ArrowDownLeftIcon, ArrowsLeftRightIcon, ArrowUpRightIcon, DotsThreeIcon, GearIcon } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
+import { RpcService } from "./lib/rpc";
+import { lamportsToSol } from "./lib/utils/solana/solLamportConversion";
 // import PopCard from "./components/ui/layout/PopCard";
 
 function App() {
@@ -33,6 +36,15 @@ function App() {
     checkVault();
   }, []);
 
+  const balanceQuery = useQuery({
+    queryKey: ["balance", account?.pubkey],
+    queryFn: async () => {
+      if (!account) return 0;
+      const blance = await RpcService.getBalance(account.pubkey);
+      return blance;
+    }
+  })
+
   const cleanWallet = async () => {
     await sendMessage("VAULT_CLEAR", undefined);
   }
@@ -55,7 +67,7 @@ function App() {
           <div className="flex flex-col items-center justify-center">
             <div className="mt-6 flex flex-col items-center justify-center">
               <h3 className="text-xs text-gray-300 mb-2">Total Balance</h3>
-              <h1 className="text-5xl font-semibold">$0.00</h1>
+              <h1 className="text-5xl font-semibold">{balanceQuery.data ? (lamportsToSol(balanceQuery.data)) : "0.00"} SOL</h1>
               <p className="text-sm text-emerald-500 mt-2">+2.5% from last week</p>
             </div>
 
@@ -63,6 +75,7 @@ function App() {
               <div className="flex flex-col justify-center items-center">
                 <button
                   className="flex bg-white/20 text-sm rounded-full justify-center items-center w-16 h-16 inset-top-light"
+                  onClick={() => navigate("/send")}
                 >
                   <ArrowUpRightIcon size={24} weight="bold" className="mr-1" />
                 </button>

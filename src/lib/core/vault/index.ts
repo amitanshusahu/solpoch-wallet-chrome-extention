@@ -29,7 +29,7 @@ export class Vault {
     const data = await this.getVaultData();
     return !!data;
   }
-  
+
   async getIsUnlocked(): Promise<boolean> {
     return WalletSessionService.getUnlocked();
   }
@@ -62,7 +62,8 @@ export class Vault {
       throw new Error("Incorrect password");
     }
     await WalletSessionService.setUnlocked(true);
-    return vaultData.accounts[vaultData.activeAccountIndex];
+    const activeAccount = await this.getActiveAccount();
+    return activeAccount;
   }
 
   async getActiveAccount(): Promise<Account> {
@@ -81,7 +82,8 @@ export class Vault {
       throw new Error("Vault locked")
     }
     const mnemonic = await this.decryptMnemonicFromPassword(password);
-    const keypair = keypairFromMnemonic(mnemonic, 0)
+    const activeAccount = await this.getActiveAccount();
+    const keypair = keypairFromMnemonic(mnemonic, activeAccount.index)
     tx.sign(keypair)
     return tx
   }
