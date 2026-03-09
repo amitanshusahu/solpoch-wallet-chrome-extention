@@ -4,6 +4,7 @@ import type { ApprovalResponseRequest, ConnectWalletRequest, GetApprovalsFromMan
 import type { ApprovalManagerResponse, ApprovalPayload, ApprovalRequest } from "../../scripts/background/ApprovalManager";
 
 /**
+ * easy to understnad, generated types and then merged them to MessageMap ( type MessageMap =  {...} & ApprovalResolveMap)
  * generates one strongly-typed message entry per ApprovalManagerResponse key.
  *
  * e.g.  APPROVAL_MANAGER_RESOLVE_APPROVAL_SIGN_AND_SEND_TRANSACTION: {
@@ -85,8 +86,38 @@ export type MessageMap = {
   }
 
   GET_APPROVALS_FROM_MANAGER: {
-    req: GetApprovalsFromManagerRequest;
-    res: ApprovalRequest<keyof ApprovalPayload> | undefined;
+    req: GetApprovalsFromManagerRequest & { type?: keyof ApprovalPayload };
+    /**
+     * NOTE: for future me
+     * { [K in keyof ApprovalPayload]: ApprovalRequest<K> }[keyof ApprovalPayload] means "a union of ApprovalRequest for each key in ApprovalPayload". So the response is typed as a union of all possible ApprovalRequest shapes, but you can narrow it at runtime by checking the `type` field. it can also be written as in simpler way like this:
+     *   type GetApprovalsFromManagerResponse = {
+     *     [K in keyof ApprovalPayload]: ApprovalRequest<K>;
+     *   }[keyof ApprovalPayload];
+     * 
+     *  the above type becomes generatively:
+     * type GetApprovalsFromManagerResponse =
+     * | ApprovalRequest<"type1">
+     * | ApprovalRequest<"type2">
+     * | ApprovalRequest<"type3">;
+     * 
+     * how :
+     * 1)key of ApprovalPayload is "type1" | "type2" | "type3"
+     * 2) map type
+     *  { 
+     *    [K in keyof ApprovalPayload]: ApprovalRequest<K> 
+     * } 
+     * becomes
+     * {
+     *  type1: ApprovalRequest<"type1">;
+     *  type2: ApprovalRequest<"type2">;
+     * }
+     * 3) Indexed access [keyof ApprovalPayload]
+     * The response is a discriminated union — narrow it via the `type` field:
+     *   if (approval?.type === "APPROVAL_SIGN_AND_SEND_TRANSACTION") {
+     *     approval.payload  // typed as SignAndSendUsingTransactionRequest
+     *   }
+     */
+    res: { [K in keyof ApprovalPayload]: ApprovalRequest<K> }[keyof ApprovalPayload] | undefined;
   }
 
   SIGN_AND_SEND_USING_TRANSACTION: {

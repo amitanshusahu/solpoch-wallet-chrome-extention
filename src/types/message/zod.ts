@@ -69,5 +69,8 @@ export type ApprovalManagerResponseRequest = z.infer<typeof ApprovalManagerRespo
 
 export const GetApprovalsFromManagerRequestSchema = z.object({
   id: z.string(),
+  // Optional type hint — when supplied, the background validates the stored
+  // entry's type matches before returning it.
+  type: z.enum(["APPROVAL_SIGN_AND_SEND_TRANSACTION"]).optional(),
 });
 export type GetApprovalsFromManagerRequest = z.infer<typeof GetApprovalsFromManagerRequestSchema>;

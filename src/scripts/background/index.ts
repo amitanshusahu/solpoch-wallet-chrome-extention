@@ -152,11 +152,15 @@ chrome.runtime.onMessage.addListener(
 
           case "GET_APPROVALS_FROM_MANAGER": {
             const payload = GetApprovalsFromManagerRequestSchema.parse(message.payload);
-            const approvals = ApprovalManager.getApproval(payload.id);
+            // Pass the optional `type` hint so getApproval validates the stored
+            // entry matches what the popup expects before sending it back.
+            const approvals = payload.type
+              ? ApprovalManager.getApproval(payload.id, payload.type)
+              : ApprovalManager.getApproval(payload.id);
             sendResponse({
               success: true,
-              data: approvals
-            });
+              data: approvals as MessageMap["GET_APPROVALS_FROM_MANAGER"]["res"]
+            } as MessageResponse<T>);
             break;
           }
 

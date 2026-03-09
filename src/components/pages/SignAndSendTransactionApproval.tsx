@@ -17,20 +17,23 @@ export default function SignAndSendTransactionApproval() {
       }
       try {
         console.log("Fetching approval inside getApproval for ID:", id);
-        const approval = await sendMessage("GET_APPROVALS_FROM_MANAGER", { id });
+        const approval = await sendMessage("GET_APPROVALS_FROM_MANAGER", {
+          id,
+          type: "APPROVAL_SIGN_AND_SEND_TRANSACTION",
+        });
         console.log("Approval request:", approval);
-        if (approval && approval.payload) {
-          const tx = Transaction.from((approval.payload as { transaction: number[] }).transaction);
+        // Narrow via the discriminant — no casts needed
+        if (approval?.type === "APPROVAL_SIGN_AND_SEND_TRANSACTION") {
+          const tx = Transaction.from(approval.payload.transaction);
           console.log("Transaction:", tx);
 
           tx.instructions.forEach(ix => {
             if (ix.programId.equals(SystemProgram.programId)) {
-              const decoded = SystemInstruction.decodeTransfer(ix)
-
-              alert(`To: ${decoded.toPubkey.toBase58()}`)
-              alert(`Amount: ${decoded.lamports}`)
+              const decoded = SystemInstruction.decodeTransfer(ix);
+              alert(`To: ${decoded.toPubkey.toBase58()}`);
+              alert(`Amount: ${decoded.lamports}`);
             }
-          })
+          });
         }
       } catch (error) {
         console.error("Failed to get approval:", error);
