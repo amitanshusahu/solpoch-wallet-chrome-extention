@@ -2,10 +2,15 @@ import type { ApprovalManagerResponseRequest, SignAndSendUsingTransactionRequest
 
 export const ApprovalType = {
   APPROVAL_SIGN_AND_SEND_TRANSACTION: "APPROVAL_SIGN_AND_SEND_TRANSACTION",
+  APPROVAL_XYZ: "APPROVAL_XYZ"
 } as const;
 
 export interface ApprovalPayload {
   APPROVAL_SIGN_AND_SEND_TRANSACTION: SignAndSendUsingTransactionRequest;
+  APPROVAL_XYZ: {
+    title: string;
+    description: string;
+  };
 }
 
 export interface ApprovalManagerResponse {
@@ -13,6 +18,7 @@ export interface ApprovalManagerResponse {
     tx: SignAndSendUsingTransactionRequest["transaction"];
     password: string;
   };
+  APPROVAL_XYZ: ApprovalManagerResponseRequest;
 }
 
 export interface ApprovalRequest<T extends keyof ApprovalPayload> {

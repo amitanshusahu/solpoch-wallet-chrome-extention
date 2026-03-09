@@ -3,6 +3,7 @@ import type { Account } from "../vault";
 import type { ApprovalResponseRequest, ConnectWalletRequest, GetApprovalsFromManagerRequest, PopupSignAndSendTransactionRequest, SendTransactionRequest, SignAndSendUsingTransactionRequest, UnlockPopupResponseRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
 import type { ApprovalManagerResponse, ApprovalPayload, ApprovalRequest } from "../../scripts/background/ApprovalManager";
 
+
 /**
  * easy to understnad, generated types and then merged them to MessageMap ( type MessageMap =  {...} & ApprovalResolveMap)
  * generates one strongly-typed message entry per ApprovalManagerResponse key.
@@ -112,6 +113,13 @@ export type MessageMap = {
      *  type2: ApprovalRequest<"type2">;
      * }
      * 3) Indexed access [keyof ApprovalPayload]
+     * example:
+     * type abc = {
+     *   mkie: string;
+     *   tike: number;
+     * }
+     * type xyz = abc["mkie"] | abc["tike"] 
+     * type xyz = abc[keyof abc]
      * The response is a discriminated union — narrow it via the `type` field:
      *   if (approval?.type === "APPROVAL_SIGN_AND_SEND_TRANSACTION") {
      *     approval.payload  // typed as SignAndSendUsingTransactionRequest
