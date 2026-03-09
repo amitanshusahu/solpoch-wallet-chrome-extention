@@ -14,7 +14,8 @@ import {
   ConnectWalletRequestSchema,
   SendTransactionRequestSchema,
   PopupSignAndSendTransactionSchema,
-  GetApprovalsFromManagerRequestSchema
+  GetApprovalsFromManagerRequestSchema,
+  SimuateUsingTransactionSchema
 } from "../../types/message/zod";
 import { ApprovalManager, type ApprovalManagerResponse } from "./ApprovalManager";
 
@@ -161,6 +162,17 @@ chrome.runtime.onMessage.addListener(
               success: true,
               data: approvals as MessageMap["GET_APPROVALS_FROM_MANAGER"]["res"]
             } as MessageResponse<T>);
+            break;
+          }
+
+          case "SIMULATE_USING_TRANSACTION": {
+            const payload = SimuateUsingTransactionSchema.parse(message.payload);
+            const response = await TransactionService.simulateTransactionUsingTransaction(payload.transaction, payload.password);
+            sendResponse({
+              success: response.success,
+              data: response.data,
+              error: response?.error,
+            });
             break;
           }
 

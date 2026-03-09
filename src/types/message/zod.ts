@@ -74,3 +74,9 @@ export const GetApprovalsFromManagerRequestSchema = z.object({
   type: z.enum(["APPROVAL_SIGN_AND_SEND_TRANSACTION"]).optional(),
 });
 export type GetApprovalsFromManagerRequest = z.infer<typeof GetApprovalsFromManagerRequestSchema>;
+
+export const SimuateUsingTransactionSchema = z.object({
+  transaction: z.array(z.number()),
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+})
+export type SimulateUsingTransactionRequest = z.infer<typeof SimuateUsingTransactionSchema>;
