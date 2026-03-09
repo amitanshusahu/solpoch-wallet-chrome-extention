@@ -166,8 +166,10 @@ chrome.runtime.onMessage.addListener(
           }
 
           case "SIMULATE_USING_TRANSACTION": {
+            console.log('Received SIMULATE_USING_TRANSACTION message in background:', message);
             const payload = SimuateUsingTransactionSchema.parse(message.payload);
             const response = await TransactionService.simulateTransactionUsingTransaction(payload.transaction, payload.password);
+            console.log('Response from simulateTransactionUsingTransaction:', response);
             sendResponse({
               success: response.success,
               data: response.data,

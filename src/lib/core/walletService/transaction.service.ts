@@ -132,7 +132,8 @@ export abstract class TransactionService {
   }
 
   static async simulateTransactionUsingTransaction(tx: number[], password: string): Promise<MessageResponse<"SIMULATE_USING_TRANSACTION">> {
-    const transaction = Transaction.from(tx);
+    try {
+      const transaction = Transaction.from(tx);
     const signedTx = await this.signTransaction(transaction, password);
     const config: SimulateTransactionConfig = { commitment: "confirmed" }
     const simulation = await RpcService.simulateTransaction(signedTx, config);
@@ -141,6 +142,9 @@ export abstract class TransactionService {
     return {
       success: true,
       data: simulation.value,
+    }
+    } catch (error) {
+      throw new Error(`Simulation failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
