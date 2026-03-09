@@ -14,10 +14,9 @@ import {
   ConnectWalletRequestSchema,
   SendTransactionRequestSchema,
   PopupSignAndSendTransactionSchema,
-  ApprovalManagerResponseRequestSchema,
   GetApprovalsFromManagerRequestSchema
 } from "../../types/message/zod";
-import { ApprovalManager, type ApprovalManagerResponse } from "./ApprovalManager";
+import { ApprovalManager, ApprovalType, type ApprovalManagerResponse } from "./ApprovalManager";
 
 
 chrome.runtime.onMessage.addListener(
@@ -151,13 +150,17 @@ chrome.runtime.onMessage.addListener(
             break;
           }
 
-          case "APPROVAL_MANAGER_RESSOLVE": {
-            const payload = message.payload as ApprovalManagerResponse[keyof ApprovalManagerResponse];
-            ApprovalManager.resolveApproval(payload.id, payload);
-            sendResponse({
-              success: true,
-              data: null
-            });
+          case `APPROVAL_MANAGER_RESOLVE_${(ApprovalType.APPROVAL_SIGN_AND_SEND_TRANSACTION) as Uppercase<typeof ApprovalType.APPROVAL_SIGN_AND_SEND_TRANSACTION>}`: {
+            const payload = message.payload as ApprovalManagerResponse["APPROVAL_SIGN_AND_SEND_TRANSACTION"] & { id: string };
+            ApprovalManager.resolveApproval<"APPROVAL_SIGN_AND_SEND_TRANSACTION">(payload.id, payload);
+            sendResponse({ success: true, data: null });
+            break;
+          }
+
+          case `APPROVAL_MANAGER_RESOLVE_${(ApprovalType.APPROVAL_CONFIRM) as Uppercase<typeof ApprovalType.APPROVAL_CONFIRM>}`: {
+            const payload = message.payload as ApprovalManagerResponse["APPROVAL_CONFIRM"] & { id: string };
+            ApprovalManager.resolveApproval<"APPROVAL_CONFIRM">(payload.id, payload);
+            sendResponse({ success: true, data: null });
             break;
           }
 

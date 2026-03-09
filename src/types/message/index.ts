@@ -3,6 +3,21 @@ import type { Account } from "../vault";
 import type { ApprovalResponseRequest, ConnectWalletRequest, GetApprovalsFromManagerRequest, PopupSignAndSendTransactionRequest, SendTransactionRequest, SignAndSendUsingTransactionRequest, UnlockPopupResponseRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
 import type { ApprovalManagerResponse, ApprovalPayload, ApprovalRequest } from "../../scripts/background/ApprovalManager";
 
+/**
+ * generates one strongly-typed message entry per ApprovalManagerResponse key.
+ *
+ * e.g.  APPROVAL_MANAGER_RESOLVE_APPROVAL_SIGN_AND_SEND_TRANSACTION: {
+ *          req: ApprovalManagerResponse["APPROVAL_SIGN_AND_SEND_TRANSACTION"] & { id: string };
+ *          res: null;
+ *        }
+ */
+type ApprovalResolveMap = {
+  [K in keyof ApprovalManagerResponse as `APPROVAL_MANAGER_RESOLVE_${Uppercase<string & K>}`]: {
+    req: ApprovalManagerResponse[K] & { id: string };
+    res: null;
+  }
+};
+
 export type MessageMap = {
   VAULT_EXISTS: {
     req: void;
@@ -69,11 +84,6 @@ export type MessageMap = {
     res: { signature: string };
   }
 
-  APPROVAL_MANAGER_RESSOLVE: {
-    req: ApprovalManagerResponse[keyof ApprovalManagerResponse];
-    res: null;
-  }
-
   GET_APPROVALS_FROM_MANAGER: {
     req: GetApprovalsFromManagerRequest;
     res: ApprovalRequest<keyof ApprovalPayload> | undefined;
@@ -83,7 +93,7 @@ export type MessageMap = {
     req: SignAndSendUsingTransactionRequest;
     res: { signature: string };
   }
-};
+} & ApprovalResolveMap;
 
 
 export type MessageRequest<T extends keyof MessageMap> = {

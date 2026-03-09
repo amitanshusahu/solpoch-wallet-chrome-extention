@@ -19,8 +19,8 @@ export default function SignAndSendTransactionApproval() {
         console.log("Fetching approval inside getApproval for ID:", id);
         const approval = await sendMessage("GET_APPROVALS_FROM_MANAGER", { id });
         console.log("Approval request:", approval);
-        if (approval) {
-          const tx = Transaction.from(approval.payload.transaction);
+        if (approval && approval.payload) {
+          const tx = Transaction.from((approval.payload as { transaction: number[] }).transaction);
           console.log("Transaction:", tx);
 
           tx.instructions.forEach(ix => {
@@ -41,12 +41,22 @@ export default function SignAndSendTransactionApproval() {
   }, [id]);
 
   const handleApprove = async () => {
-    await sendMessage("APPROVAL_MANAGER_RESSOLVE", { id: id!, approved: true, tx: [], password: "password" });
+    await sendMessage("APPROVAL_MANAGER_RESOLVE_APPROVAL_SIGN_AND_SEND_TRANSACTION", {
+      id: id!,
+      approved: true,
+      tx: [],
+      password: "password",
+    });
     window.close();
   };
 
   const handleReject = async () => {
-    await sendMessage("APPROVAL_MANAGER_RESSOLVE", { id: id!, approved: false });
+    await sendMessage("APPROVAL_MANAGER_RESOLVE_APPROVAL_SIGN_AND_SEND_TRANSACTION", {
+      id: id!,
+      approved: false,
+      tx: [],
+      password: "password",
+    });
     window.close();
   };
 

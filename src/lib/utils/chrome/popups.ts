@@ -106,11 +106,11 @@ export async function openUnlockPopup(): Promise<boolean> {
 
 export async function openSignAndSendPopup(
   payload: MessageRequest<"POPUP_SIGN_AND_SEND_TRANSACTION">["payload"]
-): Promise<ApprovalManagerResponse["signAndSendTransaction"]> {
+): Promise<ApprovalManagerResponse["APPROVAL_SIGN_AND_SEND_TRANSACTION"]> {
   const id = crypto.randomUUID();
-  const request: ApprovalRequest<"signAndSendTransaction"> = {
+  const request: ApprovalRequest<"APPROVAL_SIGN_AND_SEND_TRANSACTION"> = {
     id,
-    type: "signAndSendTransaction",
+    type: "APPROVAL_SIGN_AND_SEND_TRANSACTION",
     origin: payload.metadata.origin,
     icon: payload.metadata.favicon,
     payload: payload.params

@@ -1,17 +1,21 @@
 import type { ApprovalManagerResponseRequest, SignAndSendUsingTransactionRequest } from "../../types/message/zod";
 
-const  ApprovalType = {
-  SIGN_AND_SEND_TRANSACTION: "signAndSendTransaction"
-};
+export const ApprovalType = {
+  APPROVAL_SIGN_AND_SEND_TRANSACTION: "APPROVAL_SIGN_AND_SEND_TRANSACTION",
+  APPROVAL_CONFIRM: "APPROVAL_CONFIRM"
+} as const;
+
 export interface ApprovalPayload {
-  [ApprovalType.SIGN_AND_SEND_TRANSACTION]: SignAndSendUsingTransactionRequest
+  APPROVAL_SIGN_AND_SEND_TRANSACTION: SignAndSendUsingTransactionRequest;
+  APPROVAL_CONFIRM: null;
 }
 
-export interface ApprovalManagerResponse{
-  [ApprovalType.SIGN_AND_SEND_TRANSACTION]: ApprovalManagerResponseRequest & {
+export interface ApprovalManagerResponse {
+  APPROVAL_SIGN_AND_SEND_TRANSACTION: ApprovalManagerResponseRequest & {
     tx: SignAndSendUsingTransactionRequest["transaction"];
     password: string;
-  }
+  };
+  APPROVAL_CONFIRM: ApprovalManagerResponseRequest;
 }
 
 export interface ApprovalRequest<T extends keyof ApprovalPayload> {
@@ -42,7 +46,7 @@ export class ApprovalManager {
     return this.approvals.get(id)?.request as ApprovalRequest<T> | undefined;
   }
 
-  static resolveApproval<T extends keyof ApprovalManagerResponse>(id: string, value: ApprovalManagerResponse[T]) {
+  static resolveApproval<T extends keyof ApprovalManagerResponse>(id: string, value: ApprovalManagerResponse[T]): void {
     const approvalData = this.approvals.get(id);
     if (approvalData) {
       approvalData.resolve(value);
