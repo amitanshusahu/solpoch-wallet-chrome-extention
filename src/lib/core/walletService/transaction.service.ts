@@ -124,4 +124,11 @@ export abstract class TransactionService {
     }
   }
 
+  static async signAndSendTransaction(tx: number[], password: string): Promise<string> {
+    const transaction = Transaction.from(tx);
+    const signedTx = await this.signTransaction(transaction, password);
+    const signature = await RpcService.sendRawTransaction(signedTx);
+    return signature;
+  }
+
 }

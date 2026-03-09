@@ -54,7 +54,9 @@ export class ProviderSolana implements Solpoch {
           options: _options
         }
       };
+      console.log('Sending signAndSendTransaction message with payload:', payload);
       const response = await sendWindowMessage("POPUP_SIGN_AND_SEND_TRANSACTION", payload);
+      console.log('Received response for signAndSendTransaction:', response);
       return {
         signature: response.signature
       };

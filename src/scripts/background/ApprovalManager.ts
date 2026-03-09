@@ -1,7 +1,17 @@
-import type { SignAndSendUsingTransactionRequest } from "../../types/message/zod";
+import type { ApprovalManagerResponseRequest, SignAndSendUsingTransactionRequest } from "../../types/message/zod";
 
+const  ApprovalType = {
+  SIGN_AND_SEND_TRANSACTION: "signAndSendTransaction"
+};
 export interface ApprovalPayload {
-  signAndSendTransaction: SignAndSendUsingTransactionRequest
+  [ApprovalType.SIGN_AND_SEND_TRANSACTION]: SignAndSendUsingTransactionRequest
+}
+
+export interface ApprovalManagerResponse{
+  [ApprovalType.SIGN_AND_SEND_TRANSACTION]: ApprovalManagerResponseRequest & {
+    tx: SignAndSendUsingTransactionRequest["transaction"];
+    password: string;
+  }
 }
 
 export interface ApprovalRequest<T extends keyof ApprovalPayload> {
@@ -21,8 +31,8 @@ export interface ArrpovalMapData {
 export class ApprovalManager {
   private static approvals: Map<string, ArrpovalMapData> = new Map();
 
-  static async createApproval<T extends keyof ApprovalPayload>(request: ApprovalRequest<T>): Promise<boolean> {
-    const approvalPromise = new Promise<boolean>((resolve, reject) => {
+  static async createApproval<T extends keyof ApprovalPayload>(request: ApprovalRequest<T>): Promise<ApprovalManagerResponse[T]> {
+    const approvalPromise = new Promise<ApprovalManagerResponse[T]>((resolve, reject) => {
       this.approvals.set(request.id, { request, resolve, reject });
     });
     return approvalPromise;
@@ -32,7 +42,7 @@ export class ApprovalManager {
     return this.approvals.get(id)?.request as ApprovalRequest<T> | undefined;
   }
 
-  static resolveApproval(id: string, value: boolean) {
+  static resolveApproval<T extends keyof ApprovalManagerResponse>(id: string, value: ApprovalManagerResponse[T]) {
     const approvalData = this.approvals.get(id);
     if (approvalData) {
       approvalData.resolve(value);

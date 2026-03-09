@@ -1,4 +1,4 @@
-import { Connection, PublicKey, Transaction, VersionedTransaction, type Blockhash, type RpcResponseAndContext, type SignatureStatus, type SimulatedTransactionResponse, type SimulateTransactionConfig } from "@solana/web3.js";
+import { Connection, PublicKey, Transaction, VersionedTransaction, type Blockhash, type RpcResponseAndContext, type SignatureStatus, type SimulatedTransactionResponse, type SimulateTransactionConfig, type TransactionSignature } from "@solana/web3.js";
 
 
 const rpcEndpoints = {
@@ -29,7 +29,7 @@ export class RpcService {
     return latestBlockHash;
   }
 
-  static async sendRawTransaction(signedTx: Transaction): Promise<string> {
+  static async sendRawTransaction(signedTx: Transaction): Promise<TransactionSignature> {
     const connection = this.getConnection();
     const signature = await connection.sendRawTransaction(
       signedTx.serialize(),

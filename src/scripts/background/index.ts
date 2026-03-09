@@ -17,7 +17,7 @@ import {
   ApprovalManagerResponseRequestSchema,
   GetApprovalsFromManagerRequestSchema
 } from "../../types/message/zod";
-import { ApprovalManager } from "./ApprovalManager";
+import { ApprovalManager, type ApprovalManagerResponse } from "./ApprovalManager";
 
 
 chrome.runtime.onMessage.addListener(
@@ -31,7 +31,7 @@ chrome.runtime.onMessage.addListener(
     // temporary listener created in openApprovalPopup().
     // Returning false tells Chrome this listener won't send a response,
     // so the other listener's sendResponse stays valid (handleConnectWallet -> openPopup -> listener).
-    const avoidTypes = ["APPROVAL_RESPONSE", "UNLOCK_POPUP_RESPONSE", "POPUP_SIGN_AND_SEND_APPROVAL_RESPONSE"] as (keyof MessageMap)[];
+    const avoidTypes = ["APPROVAL_RESPONSE", "UNLOCK_POPUP_RESPONSE"] as (keyof MessageMap)[];
     if (avoidTypes.includes(message.type)) {
       return false;
     }
@@ -117,8 +117,10 @@ chrome.runtime.onMessage.addListener(
           }
 
           case "POPUP_SIGN_AND_SEND_TRANSACTION": {
+            console.log('Received POPUP_SIGN_AND_SEND_TRANSACTION message in background:', message);
             const payload = PopupSignAndSendTransactionSchema.parse(message.payload);
             const response = await handleSignAndSendTransaction(payload);
+            console.log('Response from handleSignAndSendTransaction:', response);
             sendResponse({
               success: response.success,
               data: response.data,
@@ -150,8 +152,8 @@ chrome.runtime.onMessage.addListener(
           }
 
           case "APPROVAL_MANAGER_RESSOLVE": {
-            const payload = ApprovalManagerResponseRequestSchema.parse(message.payload);
-            ApprovalManager.resolveApproval(payload.id, payload.approved);
+            const payload = message.payload as ApprovalManagerResponse[keyof ApprovalManagerResponse];
+            ApprovalManager.resolveApproval(payload.id, payload);
             sendResponse({
               success: true,
               data: null

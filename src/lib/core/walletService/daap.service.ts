@@ -2,6 +2,7 @@ import { vaultService } from "../vault/service";
 import { openApprovalPopup, openSignAndSendPopup, openUnlockPopup } from "../../utils/chrome/popups";
 import type { MessageRequest, MessageResponse } from "../../../types/message";
 import { WalletSessionService } from "./session.service";
+import { TransactionService } from "./transaction.service";
 
 async function commonChecks() {
   const vaultExists = await vaultService.exists();
@@ -39,10 +40,16 @@ export async function handleConnectWallet(
 export async function handleSignAndSendTransaction(
   payload: MessageRequest<"POPUP_SIGN_AND_SEND_TRANSACTION">["payload"],
 ): Promise<MessageResponse<"POPUP_SIGN_AND_SEND_TRANSACTION">> {
+  console.log('Handling sign and send transaction request with payload:', payload);
   await commonChecks();
   const userApproval = await openSignAndSendPopup(payload);
+  if (!userApproval.approved) {
+    console.error('User rejected the sign and send transaction request.');
+    throw new Error("User rejected the sign and send transaction request.");
+  }
+  const signature = await TransactionService.signAndSendTransaction(payload.params.transaction, userApproval.password);
   return {
-    success: userApproval,
-    data: { signature: "signature" }
+    success: userApproval.approved,
+    data: { signature }
   }
 }

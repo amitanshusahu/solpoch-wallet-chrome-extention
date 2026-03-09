@@ -1,4 +1,4 @@
-import { ApprovalManager, type ApprovalRequest } from "../../../scripts/background/ApprovalManager";
+import { ApprovalManager, type ApprovalManagerResponse, type ApprovalRequest } from "../../../scripts/background/ApprovalManager";
 import type { MessageMap, MessageRequest, MessageResponse } from "../../../types/message";
 import { ApprovalResponseRequestSchema, UnlockPopupResponseRequestSchema } from "../../../types/message/zod";
 
@@ -104,7 +104,9 @@ export async function openUnlockPopup(): Promise<boolean> {
 }
 
 
-export async function openSignAndSendPopup(payload: MessageRequest<"POPUP_SIGN_AND_SEND_TRANSACTION">["payload"]): Promise<boolean> {
+export async function openSignAndSendPopup(
+  payload: MessageRequest<"POPUP_SIGN_AND_SEND_TRANSACTION">["payload"]
+): Promise<ApprovalManagerResponse["signAndSendTransaction"]> {
   const id = crypto.randomUUID();
   const request: ApprovalRequest<"signAndSendTransaction"> = {
     id,
@@ -115,6 +117,7 @@ export async function openSignAndSendPopup(payload: MessageRequest<"POPUP_SIGN_A
   }
 
   const approvalPromise = ApprovalManager.createApproval(request);
+  console.log('Created approval request with id:', id, 'and payload:', request);
 
   const popupWindow = await chrome.windows.create({
     url: chrome.runtime.getURL("index.html#/sign-and-send-approval?id=" + id),
@@ -122,6 +125,8 @@ export async function openSignAndSendPopup(payload: MessageRequest<"POPUP_SIGN_A
     width: 400,
     height: 600,
   });
+
+  console.log('Opened sign and send approval popup with id:', id, 'and window id:', popupWindow?.id);
 
   if (popupWindow && popupWindow.id) {
     ApprovalManager.handleWindowClosed(popupWindow.id, id);
