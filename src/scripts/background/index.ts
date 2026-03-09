@@ -13,8 +13,11 @@ import {
   VaultUnlockRequestSchema,
   ConnectWalletRequestSchema,
   SendTransactionRequestSchema,
-  PopupSignAndSendTransactionSchema
+  PopupSignAndSendTransactionSchema,
+  ApprovalManagerResponseRequestSchema,
+  GetApprovalsFromManagerRequestSchema
 } from "../../types/message/zod";
+import { ApprovalManager } from "./ApprovalManager";
 
 
 chrome.runtime.onMessage.addListener(
@@ -142,6 +145,26 @@ chrome.runtime.onMessage.addListener(
               success: response.success,
               data: response.data,
               error: response?.error,
+            });
+            break;
+          }
+
+          case "APPROVAL_MANAGER_RESSOLVE": {
+            const payload = ApprovalManagerResponseRequestSchema.parse(message.payload);
+            ApprovalManager.resolveApproval(payload.id, payload.approved);
+            sendResponse({
+              success: true,
+              data: null
+            });
+            break;
+          }
+
+          case "GET_APPROVALS_FROM_MANAGER": {
+            const payload = GetApprovalsFromManagerRequestSchema.parse(message.payload);
+            const approvals = ApprovalManager.getApproval(payload.id);
+            sendResponse({
+              success: true,
+              data: approvals
             });
             break;
           }

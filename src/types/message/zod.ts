@@ -60,3 +60,14 @@ export const SigninAndSendUsingTransactionRequestSchema = z.object({
   }).optional(),
 });
 export type SignAndSendUsingTransactionRequest = z.infer<typeof SigninAndSendUsingTransactionRequestSchema>;
+
+export const ApprovalManagerResponseRequestSchema = z.object({
+  id: z.string(),
+  approved: z.boolean(),
+});
+export type ApprovalManagerResponseRequest = z.infer<typeof ApprovalManagerResponseRequestSchema>;
+
+export const GetApprovalsFromManagerRequestSchema = z.object({
+  id: z.string(),
+});
+export type GetApprovalsFromManagerRequest = z.infer<typeof GetApprovalsFromManagerRequestSchema>;

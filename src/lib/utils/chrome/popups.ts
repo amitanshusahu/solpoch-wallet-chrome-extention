@@ -1,3 +1,4 @@
+import { ApprovalManager, type ApprovalRequest } from "../../../scripts/background/ApprovalManager";
 import type { MessageMap, MessageRequest, MessageResponse } from "../../../types/message";
 import { ApprovalResponseRequestSchema, UnlockPopupResponseRequestSchema } from "../../../types/message/zod";
 
@@ -104,48 +105,27 @@ export async function openUnlockPopup(): Promise<boolean> {
 
 
 export async function openSignAndSendPopup(payload: MessageRequest<"POPUP_SIGN_AND_SEND_TRANSACTION">["payload"]): Promise<boolean> {
+  const id = crypto.randomUUID();
+  const request: ApprovalRequest<"signAndSendTransaction"> = {
+    id,
+    type: "signAndSendTransaction",
+    origin: payload.metadata.origin,
+    icon: payload.metadata.favicon,
+    payload: payload.params
+  }
+
+  const approvalPromise = ApprovalManager.createApproval(request);
+
   const popupWindow = await chrome.windows.create({
-    url: chrome.runtime.getURL("index.html#/sign-and-send-approval?origin=" + payload.metadata.origin + (payload.metadata.favicon ? "&logoUrl=" + encodeURIComponent(payload.metadata.favicon) : "")),
+    url: chrome.runtime.getURL("index.html#/sign-and-send-approval?id=" + id),
     type: "popup",
     width: 400,
     height: 600,
   });
 
-  return new Promise((resolve) => {
-    const messageHandler = <T extends keyof MessageMap>(
-      message: MessageRequest<T>,
-      _sender: chrome.runtime.MessageSender,
-      sendResponse: (res: MessageResponse<T>) => void
-    ): boolean => {
-      if (message.type === "POPUP_SIGN_AND_SEND_APPROVAL_RESPONSE") {
-        const payload = UnlockPopupResponseRequestSchema.parse(message.payload);
-        chrome.runtime.onMessage.removeListener(messageHandler);
+  if (popupWindow && popupWindow.id) {
+    ApprovalManager.handleWindowClosed(popupWindow.id, id);
+  }
 
-        if (popupWindow) {
-          if (popupWindow.id) {
-            chrome.windows.remove(popupWindow.id);
-          }
-        }
-        resolve(payload.approved);
-        sendResponse({
-          success: true,
-          data: null
-        });
-      }
-      return true;
-    };
-
-    chrome.runtime.onMessage.addListener(messageHandler);
-
-    // if popup is closed without response, reject the promise
-    chrome.windows.onRemoved.addListener(function onWindowRemoved(windowId) {
-      if (popupWindow) {
-        if (windowId === popupWindow.id) {
-          chrome.windows.onRemoved.removeListener(onWindowRemoved);
-          chrome.runtime.onMessage.removeListener(messageHandler);
-          resolve(false);
-        }
-      }
-    });
-  })
+  return approvalPromise
 }
