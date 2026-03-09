@@ -16,7 +16,7 @@ import {
   PopupSignAndSendTransactionSchema,
   GetApprovalsFromManagerRequestSchema
 } from "../../types/message/zod";
-import { ApprovalManager, ApprovalType, type ApprovalManagerResponse } from "./ApprovalManager";
+import { ApprovalManager, type ApprovalManagerResponse } from "./ApprovalManager";
 
 
 chrome.runtime.onMessage.addListener(
@@ -150,20 +150,6 @@ chrome.runtime.onMessage.addListener(
             break;
           }
 
-          case `APPROVAL_MANAGER_RESOLVE_${(ApprovalType.APPROVAL_SIGN_AND_SEND_TRANSACTION) as Uppercase<typeof ApprovalType.APPROVAL_SIGN_AND_SEND_TRANSACTION>}`: {
-            const payload = message.payload as ApprovalManagerResponse["APPROVAL_SIGN_AND_SEND_TRANSACTION"] & { id: string };
-            ApprovalManager.resolveApproval<"APPROVAL_SIGN_AND_SEND_TRANSACTION">(payload.id, payload);
-            sendResponse({ success: true, data: null });
-            break;
-          }
-
-          case `APPROVAL_MANAGER_RESOLVE_${(ApprovalType.APPROVAL_CONFIRM) as Uppercase<typeof ApprovalType.APPROVAL_CONFIRM>}`: {
-            const payload = message.payload as ApprovalManagerResponse["APPROVAL_CONFIRM"] & { id: string };
-            ApprovalManager.resolveApproval<"APPROVAL_CONFIRM">(payload.id, payload);
-            sendResponse({ success: true, data: null });
-            break;
-          }
-
           case "GET_APPROVALS_FROM_MANAGER": {
             const payload = GetApprovalsFromManagerRequestSchema.parse(message.payload);
             const approvals = ApprovalManager.getApproval(payload.id);
@@ -171,6 +157,17 @@ chrome.runtime.onMessage.addListener(
               success: true,
               data: approvals
             });
+            break;
+          }
+
+          default: {
+            // Auto-generated: handles APPROVAL_MANAGER_RESOLVE_<type> for every ApprovalType
+            if (message.type.startsWith("APPROVAL_MANAGER_RESOLVE_")) {
+              console.log('Received approval resolution message in background:', message);
+              const payload = message.payload as ApprovalManagerResponse[keyof ApprovalManagerResponse] & { id: string };
+              ApprovalManager.resolveApproval(payload.id, payload);
+              sendResponse({ success: true, data: null });
+            }
             break;
           }
 

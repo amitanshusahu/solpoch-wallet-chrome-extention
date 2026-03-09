@@ -47,7 +47,7 @@ export default function SignAndSendTransactionApproval() {
       tx: [],
       password: "password",
     });
-    window.close();
+    // window.close();
   };
 
   const handleReject = async () => {
@@ -57,7 +57,7 @@ export default function SignAndSendTransactionApproval() {
       tx: [],
       password: "password",
     });
-    window.close();
+    // window.close();
   };
 
   return (
