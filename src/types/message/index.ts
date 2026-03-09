@@ -5,7 +5,7 @@ import type { ApprovalManagerResponse, ApprovalPayload, ApprovalRequest } from "
 
 
 /**
- * easy to understnad, generated types and then merged them to MessageMap ( type MessageMap =  {...} & ApprovalResolveMap)
+ * easy to understnad, generated types (mapping) and then merged them to MessageMap ( type MessageMap =  {...} & ApprovalResolveMap)
  * generates one strongly-typed message entry per ApprovalManagerResponse key.
  *
  * e.g.  APPROVAL_MANAGER_RESOLVE_APPROVAL_SIGN_AND_SEND_TRANSACTION: {
@@ -120,7 +120,8 @@ export type MessageMap = {
      * }
      * type xyz = abc["mkie"] | abc["tike"] 
      * type xyz = abc[keyof abc]
-     * The response is a discriminated union — narrow it via the `type` field:
+     * 
+     * The response is a discriminated union — narrow it via the `type` field in xyz page.tsx where ever send message is used:
      *   if (approval?.type === "APPROVAL_SIGN_AND_SEND_TRANSACTION") {
      *     approval.payload  // typed as SignAndSendUsingTransactionRequest
      *   }
