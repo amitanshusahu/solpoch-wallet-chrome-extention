@@ -1,5 +1,5 @@
 import { PublicKey, VersionedTransaction } from '@solana/web3.js';
-import type { Transaction, SendOptions, TransactionSignature } from '@solana/web3.js';
+import { Transaction, type SendOptions, type TransactionSignature } from '@solana/web3.js';
 import type { SolanaSignInInput, SolanaSignInOutput } from '@solana/wallet-standard-features';
 import type { Solpoch, SolpochEvent } from '../solpoch-wallet-standard/window.ts';
 import { sendWindowMessage } from '../utils/chrome/message.ts';
@@ -40,6 +40,9 @@ export class ProviderSolana implements Solpoch {
   ): Promise<{ signature: TransactionSignature }> {
     try {
       const logoUrl = getLogoUrl();
+      // NOTE: for future me
+      // we are serializing the transaction here because we cannot send the Transaction object directly through postMessage, as it contains methods and stuff which can't be copied. 
+      // By serializing it to an array of bytes, we can send it through postMessage and then reconstruct(deserialize) the Transaction object in the background script before signing and sending it.
       const serializedTx = _transaction.serialize({
         requireAllSignatures: false,
         verifySignatures: false
@@ -66,7 +69,27 @@ export class ProviderSolana implements Solpoch {
   }
 
   async signTransaction<T extends Transaction | VersionedTransaction>(_transaction: T): Promise<T> {
-    throw new Error('signTransaction is not implemented yet');
+    try {
+      const logoUrl = getLogoUrl();
+      const serializedTx = _transaction.serialize({
+        requireAllSignatures: false,
+        verifySignatures: false
+      });
+      const payload = {
+        metadata: {
+          origin: window.location.origin,
+          favicon: logoUrl
+        },
+        params: {
+          transaction: Array.from(serializedTx),
+        }
+      };
+      const response = await sendWindowMessage("POPUP_SIGN_TRANSACTION", payload);
+      const signedTx = Transaction.from(response.transaction);
+      return signedTx as T;
+    } catch (error) {
+      throw new Error('signTransaction is not implemented yet');
+    }
   }
 
   async signAllTransactions<T extends Transaction | VersionedTransaction>(_transactions: T[]): Promise<T[]> {

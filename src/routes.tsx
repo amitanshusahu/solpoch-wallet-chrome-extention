@@ -4,6 +4,7 @@ import Onboarding from "./components/pages/Onboarding";
 import Recieve from "./components/pages/Recieve";
 import Send from "./components/pages/Send";
 import SignAndSendTransactionApproval from "./components/pages/SignAndSendTransactionApproval";
+import SignTransactionApproval from "./components/pages/SignTransactionApproval";
 import UnlockPopup from "./components/pages/UnlockPopup";
 
 export const routes = [
@@ -38,5 +39,9 @@ export const routes = [
   {
     path: '/sign-and-send-approval',
     element: <SignAndSendTransactionApproval />
+  },
+  {
+    path: '/sign-transaction-approval',
+    element: <SignTransactionApproval />
   }
 ]

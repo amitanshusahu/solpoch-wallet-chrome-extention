@@ -26,7 +26,7 @@ import StatusBadge from "../ui/popup/signAndSendTransaction/StatusBadge";
 import SectionCard from "../ui/popup/signAndSendTransaction/SectionCard";
 import Row from "../ui/popup/signAndSendTransaction/Row";
 
-export default function SignAndSendTransactionApproval() {
+export default function SignTransactionApproval() {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const [password, setPassword] = useState("");
@@ -48,9 +48,9 @@ export default function SignAndSendTransactionApproval() {
       try {
         const approval = await sendMessage("GET_APPROVALS_FROM_MANAGER", {
           id,
-          type: "APPROVAL_SIGN_AND_SEND_TRANSACTION",
+          type: "APPROVAL_SIGN_TRANSACTION",
         });
-        if (approval?.type === "APPROVAL_SIGN_AND_SEND_TRANSACTION") {
+        if (approval?.type === "APPROVAL_SIGN_TRANSACTION") {
           const transaction = Transaction.from(approval.payload.transaction);
           setTx(approval.payload.transaction);
           setParsedTx(transaction);
@@ -89,7 +89,7 @@ export default function SignAndSendTransactionApproval() {
 
   const handleApprove = async () => {
     if (!tx) return;
-    await sendMessage("APPROVAL_MANAGER_RESOLVE_APPROVAL_SIGN_AND_SEND_TRANSACTION", {
+    await sendMessage("APPROVAL_MANAGER_RESOLVE_APPROVAL_SIGN_TRANSACTION", {
       id: id!,
       approved: true,
       tx,
@@ -100,7 +100,7 @@ export default function SignAndSendTransactionApproval() {
 
   const handleReject = async () => {
     if (!tx) return;
-    await sendMessage("APPROVAL_MANAGER_RESOLVE_APPROVAL_SIGN_AND_SEND_TRANSACTION", {
+    await sendMessage("APPROVAL_MANAGER_RESOLVE_APPROVAL_SIGN_TRANSACTION", {
       id: id!,
       approved: false,
       tx,
@@ -168,13 +168,13 @@ export default function SignAndSendTransactionApproval() {
             <div className="flex gap-4 mt-6 items-center">
               <img src={logoUrl} alt="favicon" className="w-12 h-12 rounded-md bg-white/5 p-2" />
               <div>
-                <h2 className="text-sm">Approve Sign And Send Transaction Request</h2>
+                <h2 className="text-sm">Approve Sign Transaction Request</h2>
                 <h2 className="text-xs text-gray-300">{origin?.replace("https://", "").replace("http://", "")}</h2>
               </div>
             </div>
             <div className="rounded bg-primary/20 p-4 mt-8 flex gap-2">
               <div><InfoIcon size={12} weight="fill" className="text-primary" /></div>
-                <h3 className="text-xs">By approving, you authorize <span className="text-primary">{origin}</span> to sign and submit this transaction to the blockchain</h3>
+              <h3 className="text-xs">By approving, you authorize <span className="text-primary">{origin}</span> to sign this transaction, the <span className="text-primary">{origin}</span> may or may not submit it to the blockchain</h3>
             </div>
           </div>
 

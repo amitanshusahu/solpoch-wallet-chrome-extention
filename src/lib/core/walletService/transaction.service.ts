@@ -18,7 +18,7 @@ export abstract class TransactionService {
     return { tx, publicKey: account.pubkey }
   }
 
-  private static async signTransaction(tx: Transaction, password: string): Promise<Transaction> {
+  static async signTransaction(tx: Transaction, password: string): Promise<Transaction> {
     const signedTx = await vaultService.signTransaction(tx, password)
     return signedTx
   }

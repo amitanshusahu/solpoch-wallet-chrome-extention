@@ -1,6 +1,6 @@
 import type { SimulatedTransactionResponse } from "@solana/web3.js";
 import type { Account } from "../vault";
-import type { ApprovalResponseRequest, ConnectWalletRequest, GetApprovalsFromManagerRequest, PopupSignAndSendTransactionRequest, SendTransactionRequest, SimulateUsingTransactionRequest, UnlockPopupResponseRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
+import type { ApprovalResponseRequest, ConnectWalletRequest, GetApprovalsFromManagerRequest, PopupSignAndSendTransactionRequest, PopupSignTransactionRequest, SendTransactionRequest, SimulateUsingTransactionRequest, UnlockPopupResponseRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
 import type { ApprovalManagerResponse, ApprovalPayload, ApprovalRequest } from "../../scripts/background/ApprovalManager";
 
 
@@ -137,6 +137,11 @@ export type MessageMap = {
   SIMULATE_USING_TRANSACTION: {
     req: SimulateUsingTransactionRequest;
     res: SimulatedTransactionResponse;
+  }
+
+  POPUP_SIGN_TRANSACTION: {
+    req: PopupSignTransactionRequest;
+    res: { transaction: number[] };
   }
 } & ApprovalResolveMap;
 

@@ -2,7 +2,7 @@
 
 import { vaultService } from "../../lib/core/vault/service";
 import { TransactionService } from "../../lib/core/walletService/transaction.service";
-import { handleConnectWallet, handleSignAndSendTransaction } from "../../lib/core/walletService/daap.service";
+import { handleConnectWallet, handleSignAndSendTransaction, handleSignTransaction } from "../../lib/core/walletService/daap.service";
 import {
   type MessageMap,
   type MessageRequest,
@@ -15,7 +15,8 @@ import {
   SendTransactionRequestSchema,
   PopupSignAndSendTransactionSchema,
   GetApprovalsFromManagerRequestSchema,
-  SimuateUsingTransactionSchema
+  SimuateUsingTransactionSchema,
+  PopupSignTransactionSchema
 } from "../../types/message/zod";
 import { ApprovalManager, type ApprovalManagerResponse } from "./ApprovalManager";
 
@@ -121,6 +122,17 @@ chrome.runtime.onMessage.addListener(
             const payload = PopupSignAndSendTransactionSchema.parse(message.payload);
             const response = await handleSignAndSendTransaction(payload);
             console.log('Response from handleSignAndSendTransaction:', response);
+            sendResponse({
+              success: response.success,
+              data: response.data,
+              error: response?.error,
+            });
+            break;
+          }
+
+          case "POPUP_SIGN_TRANSACTION": {
+            const payload = PopupSignTransactionSchema.parse(message.payload);
+            const response = await handleSignTransaction(payload);
             sendResponse({
               success: response.success,
               data: response.data,

@@ -1,8 +1,9 @@
-import type { ApprovalManagerResponseRequest, SignAndSendUsingTransactionRequest } from "../../types/message/zod";
+import type { ApprovalManagerResponseRequest, PopupSignTransactionRequest, SignAndSendUsingTransactionRequest } from "../../types/message/zod";
 
 export const ApprovalType = {
   APPROVAL_SIGN_AND_SEND_TRANSACTION: "APPROVAL_SIGN_AND_SEND_TRANSACTION",
-  APPROVAL_XYZ: "APPROVAL_XYZ"
+  APPROVAL_XYZ: "APPROVAL_XYZ",
+  APPROVAL_SIGN_TRANSACTION: "APPROVAL_SIGN_TRANSACTION",
 } as const;
 
 export interface ApprovalPayload {
@@ -11,6 +12,7 @@ export interface ApprovalPayload {
     title: string;
     description: string;
   };
+  APPROVAL_SIGN_TRANSACTION: PopupSignTransactionRequest["params"];
 }
 
 export interface ApprovalManagerResponse {
@@ -19,6 +21,10 @@ export interface ApprovalManagerResponse {
     password: string;
   };
   APPROVAL_XYZ: ApprovalManagerResponseRequest;
+  APPROVAL_SIGN_TRANSACTION: ApprovalManagerResponseRequest & {
+    tx: PopupSignTransactionRequest["params"]["transaction"];
+    password: string;
+  };
 }
 
 export interface ApprovalRequest<T extends keyof ApprovalPayload> {
@@ -46,7 +52,7 @@ export class ApprovalManager {
 
   static async createApproval<T extends keyof ApprovalPayload>(request: ApprovalRequest<T>): Promise<ApprovalManagerResponse[T]> {
     const approvalPromise = new Promise<ApprovalManagerResponse[T]>((resolve, reject) => {
-      this.approvals.set(request.id, { request, resolve, reject } as AnyApprovalMapData);
+      this.approvals.set(request.id, { request, resolve, reject } as any);
     });
     return approvalPromise;
   }

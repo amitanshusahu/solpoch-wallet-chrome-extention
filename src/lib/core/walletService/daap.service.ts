@@ -1,8 +1,9 @@
 import { vaultService } from "../vault/service";
-import { openApprovalPopup, openSignAndSendPopup, openUnlockPopup } from "../../utils/chrome/popups";
+import { openApprovalPopup, openSignAndSendPopup, openSignTransactionPopup, openUnlockPopup } from "../../utils/chrome/popups";
 import type { MessageRequest, MessageResponse } from "../../../types/message";
 import { WalletSessionService } from "./session.service";
 import { TransactionService } from "./transaction.service";
+import { Transaction } from "@solana/web3.js";
 
 async function commonChecks() {
   const vaultExists = await vaultService.exists();
@@ -51,5 +52,26 @@ export async function handleSignAndSendTransaction(
   return {
     success: userApproval.approved,
     data: { signature }
+  }
+}
+
+export async function handleSignTransaction(
+  payload: MessageRequest<"POPUP_SIGN_TRANSACTION">["payload"],
+): Promise<MessageResponse<"POPUP_SIGN_TRANSACTION">> {
+  await commonChecks();
+  const userApproval = await openSignTransactionPopup(payload);
+  if (!userApproval.approved) {
+    console.error('User rejected the sign transaction request.');
+    throw new Error("User rejected the sign transaction request.");
+  }
+  const tx = Transaction.from(payload.params.transaction);
+  const signedTx = await TransactionService.signTransaction(tx, userApproval.password);
+  const serializeTx = signedTx.serialize({
+    requireAllSignatures: false,
+    verifySignatures: false
+  });
+  return {
+    success: userApproval.approved,
+    data: { transaction: Array.from(serializeTx) }
   }
 }
