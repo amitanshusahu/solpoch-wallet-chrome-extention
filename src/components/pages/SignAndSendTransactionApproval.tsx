@@ -175,7 +175,7 @@ export default function SignAndSendTransactionApproval() {
             <div className="flex gap-4 items-center">
               <img src={logoUrl} alt="favicon" className="w-12 h-12 rounded-md bg-white/5 p-2" />
               <div>
-                <h2 className="text-sm">Approve Sign And Send Transaction Request</h2>
+                <h2 className="text-sm">Approve Send Transaction Request</h2>
                 <h2 className="text-xs text-gray-300">{origin?.replace("https://", "").replace("http://", "")}</h2>
               </div>
             </div>
@@ -314,7 +314,7 @@ export default function SignAndSendTransactionApproval() {
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-3 sticky bottom-0 bg-bg/80 backdrop-blur-sm">
+        <div className="flex gap-3 sticky bottom-0 bg-bg/80 backdrop-blur-sm pt-3">
           <button
             onClick={handleReject}
             className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white/7 hover:bg-white/11 transition-colors rounded-full text-white font-medium w-full text-xs"

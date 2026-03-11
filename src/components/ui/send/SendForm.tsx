@@ -14,8 +14,8 @@ export default function SendForm({
   goNextStep: () => void,
 }) {
   return (
-    <>
-      <div className="flex flex-col justify-center items-center w-full">
+    <div className="h-full flex flex-col justify-between">
+      <div className="flex flex-col justify-center items-center w-full pt-16">
         <div className="mb-4">
           <img src="/solana-logo.png" alt="Solana Logo" className="h-10 w-10" />
         </div>
@@ -45,6 +45,6 @@ export default function SendForm({
         Continue
         <CaretRightIcon size={14} weight="bold" className="text-gray-200" />
       </button>
-    </>
+    </div>
   )
 }

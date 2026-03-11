@@ -1,19 +1,34 @@
-import { CheckIcon, XIcon } from "@phosphor-icons/react";
+import {
+  ArrowUpIcon,
+  CheckIcon,
+  CheckCircleIcon,
+  CpuIcon,
+  CurrencyDollarIcon,
+  GlobeIcon,
+  LightningIcon,
+  WarningCircleIcon,
+  XIcon,
+} from "@phosphor-icons/react";
 import type { SimulatedTransactionResponse } from "@solana/web3.js";
 import { useEffect, useState } from "react";
 import { sendMessage } from "../../../lib/utils/chrome/message";
 import ConfirmWithPassword from "../util/ConfirmWithPassword";
 import { useNavigate } from "react-router-dom";
-import { solToLamports } from "../../../lib/utils/solana/solLamportConversion";
+import { solToLamports, lamportsToSol } from "../../../lib/utils/solana/solLamportConversion";
+import SimulatingOverlay from "../popup/signAndSendTransaction/SimulatingOverlay";
+import StatusBadge from "../popup/signAndSendTransaction/StatusBadge";
+import SectionCard from "../popup/signAndSendTransaction/SectionCard";
+import Row from "../popup/signAndSendTransaction/Row";
+import { shortAddress } from "../../../lib/utils/solana/parse";
+import { useAccountStore } from "../../../store";
 
 export default function ConfirmSend({
   amount,
   toAddress,
 }: {
-  amount: string,
-  toAddress: string,
+  amount: string;
+  toAddress: string;
 }) {
-
   const [simulating, setSimulating] = useState(false);
   const [simulationResult, setSimulationResult] = useState<SimulatedTransactionResponse | null>(null);
   const [password, setPassword] = useState<string>("");
@@ -22,6 +37,7 @@ export default function ConfirmSend({
   const [canSend, setCanSend] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [signature, setSignature] = useState<string | null>(null);
+  const account = useAccountStore((state) => state.account);
 
   useEffect(() => {
     async function simulate() {
@@ -30,7 +46,7 @@ export default function ConfirmSend({
         const response = await sendMessage("SIMULATE_TRANSACTION", {
           to: toAddress,
           amount: solToLamports(parseFloat(amount)),
-          password: password
+          password,
         });
         setSimulationResult(response);
         setCanSend(!response?.err);
@@ -58,111 +74,233 @@ export default function ConfirmSend({
       const response = await sendMessage("SIGN_AND_SEND_TRANSACTION", {
         to: toAddress,
         amount: solToLamports(parseFloat(amount)),
-        password: password
+        password,
       });
       setSignature(response);
-      console.log("Send response:", response);
     } catch (error) {
       console.error("Send error:", error);
     } finally {
       setIsSending(false);
     }
-  }
+  };
 
+  // ── Password gate ──────────────────────────────────────────────────────────
   if (!confimedWithPassword) {
-    return <ConfirmWithPassword password={password} setPassword={setPassword} setConfimedWithPassword={setConfimedWithPassword} />
-  }
-
-  if (signature) {
     return (
-      <div className="flex flex-col justify-center items-center h-full gap-4">
-        <img src="/logo.png" alt="Solana Logo" className="h-10 w-10" />
-        <div className="text-center">
-          <p className="text-sm text-gray-200">Transaction sent successfully!</p>
-          <a href={`https://explorer.solana.com/tx/${signature}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="text-xs text-primary mt-1 block">
-            View on Solana Explorer
-          </a>
-          {/* <a href={`https://solscan.io/tx/${signature}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="text-xs text-primary mt-1 block">
-            View on Solscan
-          </a> */}
-        </div>
-      </div>
-    )
+      <ConfirmWithPassword
+        password={password}
+        setPassword={setPassword}
+        setConfimedWithPassword={setConfimedWithPassword}
+      />
+    );
   }
 
+  // ── Simulating overlay ─────────────────────────────────────────────────────
+  if (simulating) {
+    return <SimulatingOverlay />;
+  }
+
+  // ── Sending spinner ────────────────────────────────────────────────────────
   if (isSending) {
     return (
       <div className="flex flex-col justify-center items-center h-full gap-4">
-        <p className="text-sm text-gray-200">Sending transaction...</p>
         <div className="relative">
-          <div className="border-t-4 border-primary rounded-full p-2  animate-spin">
-            <div className="h-20 w-20"></div>
+          <div className="border-t-2 border-primary rounded-full animate-spin">
+            <div className="h-16 w-16" />
           </div>
-          <img src="/logo.png" alt="Solana Logo" className="h-10 w-10 absolute top-7 left-7" />
+          <img src="/logo.png" alt="logo" className="h-8 w-8 absolute top-4 left-4" />
         </div>
+        <p className="text-xs text-gray-400">Sending transaction…</p>
       </div>
-    )
+    );
   }
+
+  // ── Success ────────────────────────────────────────────────────────────────
+  if (signature) {
+    return (
+      <div className="flex flex-col justify-center items-center h-full gap-4">
+        <div className="flex bg-green-500/10 rounded-full p-4">
+          <CheckCircleIcon size={40} weight="fill" className="text-green-500" />
+        </div>
+        <div className="text-center flex flex-col gap-1">
+          <p className="text-xs font-semibold text-gray-200">Transaction sent successfully!</p>
+          <a
+            href={`https://explorer.solana.com/tx/${signature}?cluster=devnet`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-primary"
+          >
+            View on Solana Explorer
+          </a>
+        </div>
+        <SectionCard>
+          <Row
+            label="To"
+            value={shortAddress(toAddress)}
+            icon={<ArrowUpIcon size={13} />}
+            mono
+            accent="neutral"
+          />
+          <Row
+            label="Amount"
+            value={`${amount} SOL`}
+            icon={<CurrencyDollarIcon size={13} />}
+            accent="red"
+          />
+          <Row
+            label="Network"
+            value="Devnet"
+            icon={<GlobeIcon size={13} />}
+            accent="neutral"
+          />
+        </SectionCard>
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white/7 hover:bg-white/11 transition-colors rounded-full text-white font-medium w-full text-xs mt-2"
+        >
+          Done
+        </button>
+      </div>
+    );
+  }
+
+  // ── Main confirm view ──────────────────────────────────────────────────────
+  const simErr = simulationResult?.err ?? null;
+  const unitsConsumed = simulationResult?.unitsConsumed;
+  const estimatedFee = lamportsToSol(5000);
 
   return (
     <>
-      <div className="flex flex-col justify-center items-center h-full">
-        <h1 className="text-sm font-bold mb-4">Confirm Send</h1>
-        <div className="mb-12">
-          <img src="/solana-logo.png" alt="Solana Logo" className="h-10 w-10" />
+      {/* Scrollable body */}
+      <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col gap-3 pb-12">
+        {/* Header */}
+        <div className="flex gap-3 items-center mb-1">
+          <div className="flex bg-white/5 rounded-full p-4">
+            <img src="/solana-logo.png" alt="logo"  className="w-8"/>
+          </div>
+          <div>
+            <h2 className="text-sm">Confirm Send</h2>
+            <p className="text-xs text-gray-500">Review before sending</p>
+          </div>
         </div>
-        {
-          (simulating && !signature) ? (
-            <p>Simulating transaction...</p>
-          ) : simulationResult ? (
-            simulationResult.err ? (
-              <p className="text-red-500">Simulation failed: {JSON.stringify(simulationResult.err)}</p>
-            ) : (
-              <>
-                <p className="text-green-500 text-xs mb-2">Simulation successful! Transaction is likely to succeed.</p>
-                <div className="w-full bg-white/5 p-4 rounded-lg flex flex-col">
-                  <div className="flex justify-between w-full gap-4">
-                    <span className="text-xs text-gray-400">To</span>
-                    <span className="text-xs text-gray-200">{toAddress}</span>
-                  </div>
-                  <div className="flex justify-between w-full gap-4 border-t border-bg mt-2 pt-2 border-b mb-2 pb-2">
-                    <span className="text-xs text-gray-400">Amount</span>
-                    <span className="text-xs text-gray-200">{amount} SOL</span>
-                  </div>
-                  <div className="flex justify-between w-full gap-4">
-                    <span className="text-xs text-gray-400">Cluster</span>
-                    <span className="text-xs text-gray-200">Devnet</span>
+
+        {/* Simulation status */}
+        {simulationResult && (
+          <div className="flex items-center justify-between gap-2">
+            <StatusBadge err={simErr} />
+          </div>
+        )}
+
+        {/* No simulation result yet */}
+        {!simulationResult && !simulating && (
+          <div className="flex items-center gap-2 rounded-xl bg-yellow-500/[0.07] border border-yellow-500/20 px-3 py-2.5">
+            <WarningCircleIcon size={14} className="text-yellow-400 shrink-0" />
+            <p className="text-xs text-yellow-300/80">Simulation data unavailable</p>
+          </div>
+        )}
+
+        {/* Transfer details */}
+        <div className="flex flex-col gap-1.5">
+          <p className="text-xs text-gray-500 px-0.5">Transfer</p>
+          <SectionCard>
+            <div className="px-3 py-2.5 border-b border-white/5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-red-500/10 shrink-0">
+                    <ArrowUpIcon size={10} weight="bold" className="text-red-400" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-xs text-gray-400">Send to</p>
+                    <p className="text-xs font-mono text-gray-200 truncate">{shortAddress(toAddress)}</p>
                   </div>
                 </div>
-              </>
-            )
-          ) : (
-            <p>Ready to simulate transaction.</p>
-          )
-        }
-      </div>
-      {
-        !signature ? (
-          <div className="flex gap-4">
-            <button
-              onClick={() => navigate("/")}
-              className="px-4 py-2 bg-white/10 rounded-full text-white font-semibold w-full text-xs inset-top mt-3 disabled:bg-primary/50 flex gap-2 justify-center items-center"
-              disabled={!toAddress || !amount}
-            >
-              <XIcon size={14} weight="bold" className="text-gray-200" />
-              Cancel
-            </button>
-            <button
-              className="px-4 py-2 bg-primary rounded-full text-white font-semibold w-full text-xs inset-top mt-3 disabled:bg-primary/50 flex gap-2 justify-center items-center"
-              disabled={!toAddress || !amount || simulating || !canSend}
-              onClick={handleSend}
-            >
-              <CheckIcon size={14} weight="bold" className="text-gray-200" />
-              Send
-            </button>
+                <p className="text-xs font-semibold text-red-400 shrink-0">
+                  -{amount} SOL
+                </p>
+              </div>
+            </div>
+            <Row
+              label="From"
+              value={account?.pubkey ? shortAddress(account.pubkey) : "—"}
+              icon={<GlobeIcon size={13} />}
+              mono
+              accent="neutral"
+            />
+            <Row
+              label="Network"
+              value="Devnet"
+              icon={<GlobeIcon size={13} />}
+              accent="neutral"
+            />
+          </SectionCard>
+        </div>
+
+        {/* Simulation details */}
+        {simulationResult && (
+          <div className="flex flex-col gap-1.5">
+            <p className="text-xs text-gray-500 px-0.5">Details</p>
+            <SectionCard>
+              <Row
+                label="Amount"
+                value={`${amount} SOL`}
+                icon={<CurrencyDollarIcon size={13} />}
+                accent="red"
+              />
+              <Row
+                label="Estimated fee"
+                value={`~${estimatedFee.toFixed(6)} SOL`}
+                icon={<LightningIcon size={13} />}
+                accent="neutral"
+              />
+              {unitsConsumed !== undefined && (
+                <Row
+                  label="Compute units"
+                  value={unitsConsumed.toLocaleString()}
+                  icon={<CpuIcon size={13} />}
+                  accent="neutral"
+                />
+              )}
+            </SectionCard>
           </div>
-        ) : null
-      }
+        )}
+
+        {/* Simulation logs */}
+        {simulationResult?.logs && simulationResult.logs.length > 0 && (
+          <details className="group">
+            <summary className="flex items-center gap-2 cursor-pointer list-none">
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors select-none">
+                <span>View logs ({simulationResult.logs.length})</span>
+              </div>
+            </summary>
+            <div className="mt-2 rounded-xl bg-white/3 border border-white/6 p-3 max-h-32 overflow-y-auto scrollbar-hide">
+              {simulationResult.logs.map((log, i) => (
+                <p key={i} className="text-xs font-mono text-gray-500 leading-5 break-all">
+                  {log}
+                </p>
+              ))}
+            </div>
+          </details>
+        )}
+      </div>
+
+      {/* Sticky action buttons */}
+      <div className="flex gap-3 sticky bottom-0 bg-bg/80 backdrop-blur-sm pt-2">
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white/7 hover:bg-white/11 transition-colors rounded-full text-white font-medium w-full text-xs"
+        >
+          <XIcon size={13} weight="bold" />
+          Cancel
+        </button>
+        <button
+          className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors rounded-full text-white font-medium w-full text-xs inset-top"
+          disabled={!toAddress || !amount || simulating || !canSend}
+          onClick={handleSend}
+        >
+          <CheckIcon size={13} weight="bold" />
+          Send
+        </button>
+      </div>
     </>
-  )
+  );
 }

@@ -313,7 +313,7 @@ export default function SignTransactionApproval() {
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-3 sticky bottom-0 bg-bg/80 backdrop-blur-sm">
+        <div className="flex gap-3 sticky bottom-0 bg-bg/80 backdrop-blur-sm pt-3">
           <button
             onClick={handleReject}
             className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white/7 hover:bg-white/11 transition-colors rounded-full text-white font-medium w-full text-xs"
