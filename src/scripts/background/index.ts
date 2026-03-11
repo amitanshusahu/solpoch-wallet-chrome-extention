@@ -2,7 +2,7 @@
 
 import { vaultService } from "../../lib/core/vault/service";
 import { TransactionService } from "../../lib/core/walletService/transaction.service";
-import { handleConnectWallet, handleSignAndSendTransaction, handleSignTransaction } from "../../lib/core/walletService/daap.service";
+import { handleConnectWallet, handleSignAllTransactions, handleSignAndSendTransaction, handleSignTransaction } from "../../lib/core/walletService/daap.service";
 import {
   type MessageMap,
   type MessageRequest,
@@ -16,7 +16,9 @@ import {
   PopupSignAndSendTransactionSchema,
   GetApprovalsFromManagerRequestSchema,
   SimuateUsingTransactionSchema,
-  PopupSignTransactionSchema
+  PopupSignTransactionSchema,
+  PopupSignTransactionsSchema,
+  SimuateUsingTransactionsSchema
 } from "../../types/message/zod";
 import { ApprovalManager, type ApprovalManagerResponse } from "./ApprovalManager";
 
@@ -141,6 +143,17 @@ chrome.runtime.onMessage.addListener(
             break;
           }
 
+          case "POPUP_SIGN_ALL_TRANSACTIONS": {
+            const payload = PopupSignTransactionsSchema.parse(message.payload);
+            const response = await handleSignAllTransactions(payload);
+            sendResponse({
+              success: response.success,
+              data: response.data,
+              error: response?.error,
+            });
+            break;
+          }
+
           case "SIGN_AND_SEND_TRANSACTION": {
             const payload = SendTransactionRequestSchema.parse(message.payload);
             const response = await TransactionService.sendTransaction(payload.to, payload.amount, payload.password);
@@ -189,6 +202,17 @@ chrome.runtime.onMessage.addListener(
             });
             break;
           }
+
+          case "SIMULATE_USING_TRANSACTIONS": {
+            const payload = SimuateUsingTransactionsSchema.parse(message.payload);
+            const response = await TransactionService.simulateTransactionUsingTransactions(payload.transactions, payload.password);
+            sendResponse({
+              success: response.success,
+              data: response.data,
+              error: response?.error,
+            });
+            break;
+          } 
 
           default: {
             // Auto-generated: handles APPROVAL_MANAGER_RESOLVE_<type> for every ApprovalType

@@ -71,7 +71,11 @@ export const GetApprovalsFromManagerRequestSchema = z.object({
   id: z.string(),
   // Optional type hint — when supplied, the background validates the stored
   // entry's type matches before returning it.
-  type: z.enum(["APPROVAL_SIGN_AND_SEND_TRANSACTION", "APPROVAL_SIGN_TRANSACTION"]).optional(),
+  type: z.enum([
+    "APPROVAL_SIGN_AND_SEND_TRANSACTION",
+    "APPROVAL_SIGN_TRANSACTION",
+    "APPROVAL_SIGN_ALL_TRANSACTIONS"
+  ]).optional(),
 });
 export type GetApprovalsFromManagerRequest = z.infer<typeof GetApprovalsFromManagerRequestSchema>;
 
@@ -80,6 +84,12 @@ export const SimuateUsingTransactionSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters long"),
 })
 export type SimulateUsingTransactionRequest = z.infer<typeof SimuateUsingTransactionSchema>;
+
+export const SimuateUsingTransactionsSchema = z.object({
+  transactions: z.array(z.array(z.number())),
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+})
+export type SimulateUsingTransactionsRequest = z.infer<typeof SimuateUsingTransactionsSchema>;
 
 export const PopupSignTransactionSchema = z.object({
   metadata: z.object({
@@ -91,3 +101,14 @@ export const PopupSignTransactionSchema = z.object({
   }),
 });
 export type PopupSignTransactionRequest = z.infer<typeof PopupSignTransactionSchema>;
+
+export const PopupSignTransactionsSchema = z.object({
+  metadata: z.object({
+    origin: z.string().url("Origin must be a valid URL"),
+    favicon: z.string().optional(),
+  }),
+  params: z.object({
+    transactions: z.array(z.array(z.number())),
+  }),
+});
+export type PopupSignTransactionsRequest = z.infer<typeof PopupSignTransactionsSchema>;

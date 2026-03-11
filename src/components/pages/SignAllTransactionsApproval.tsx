@@ -26,20 +26,21 @@ import StatusBadge from "../ui/popup/signAndSendTransaction/StatusBadge";
 import SectionCard from "../ui/popup/signAndSendTransaction/SectionCard";
 import Row from "../ui/popup/signAndSendTransaction/Row";
 
-export default function SignAndSendTransactionApproval() {
+export default function SignAllTransactionsApproval() {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const [password, setPassword] = useState("");
   const [confimedWithPassword, setConfimedWithPassword] = useState(false);
-  const [tx, setTx] = useState<number[] | null>(null);
-  const [parsedTx, setParsedTx] = useState<Transaction | null>(null);
-  const [transfers, setTransfers] = useState<TransferDetails[]>([]);
-  const [programs, setPrograms] = useState<ProgramInteraction[]>([]);
+  const [txs, setTxs] = useState<number[][] | null>(null);
+  const [parsedTxs, setParsedTxs] = useState<Transaction[]>([]);
+  const [transfersList, setTransfersList] = useState<TransferDetails[][]>([]);
+  const [programsList, setProgramsList] = useState<ProgramInteraction[][]>([]);
   const [origin, setOrigin] = useState<string>("");
   const [logoUrl, setLogoUrl] = useState<string>("/logo.png");
   const account = useAccountStore((state) => state.account);
   const [simulating, setSimulating] = useState(false);
-  const [simulationResult, setSimulationResult] = useState<SimulatedTransactionResponse | null>(null);
+  const [simulationResults, setSimulationResults] = useState<(SimulatedTransactionResponse | null)[]>([]);
+  const [selectedTxIndex, setSelectedTxIndex] = useState(0);
 
   // get approval from approval manager using id
   useEffect(() => {
@@ -48,14 +49,14 @@ export default function SignAndSendTransactionApproval() {
       try {
         const approval = await sendMessage("GET_APPROVALS_FROM_MANAGER", {
           id,
-          type: "APPROVAL_SIGN_AND_SEND_TRANSACTION",
+          type: "APPROVAL_SIGN_ALL_TRANSACTIONS",
         });
-        if (approval?.type === "APPROVAL_SIGN_AND_SEND_TRANSACTION") {
-          const transaction = Transaction.from(approval.payload.transaction);
-          setTx(approval.payload.transaction);
-          setParsedTx(transaction);
-          setTransfers(parseTransferDetails(transaction));
-          setPrograms(parseProgramInteractions(transaction));
+        if (approval?.type === "APPROVAL_SIGN_ALL_TRANSACTIONS") {
+          const parsed = approval.payload.transactions.map((tx) => Transaction.from(tx));
+          setTxs(approval.payload.transactions);
+          setParsedTxs(parsed);
+          setTransfersList(parsed.map((tx) => parseTransferDetails(tx)));
+          setProgramsList(parsed.map((tx) => parseProgramInteractions(tx)));
           setOrigin(approval.origin ?? "");
           setLogoUrl(approval.icon ?? "/logo.png");
         }
@@ -63,47 +64,49 @@ export default function SignAndSendTransactionApproval() {
         console.error("Failed to get approval:", error);
       }
     }
-    if (!tx) getApproval();
+    if (!txs) getApproval();
   }, [id]);
 
   // simulate once password confirmed
   useEffect(() => {
-    async function simulateTx() {
-      if (!tx) return;
+    async function simulateTxs() {
+      if (!txs) return;
       setSimulating(true);
       try {
-        const response = await sendMessage("SIMULATE_USING_TRANSACTION", {
-          transaction: tx,
+        const response = await sendMessage("SIMULATE_USING_TRANSACTIONS", {
+          transactions: txs,
           password,
         });
-        setSimulationResult(response);
+        // response is SimulatedTransactionResponse[] — one per transaction
+        setSimulationResults(response ?? txs.map(() => null));
       } catch (error) {
-        console.error("Failed to simulate transaction:", error);
+        console.error("Failed to simulate transactions:", error);
+        setSimulationResults(txs.map(() => null));
       } finally {
         setSimulating(false);
       }
     }
-    if (tx && confimedWithPassword) simulateTx();
-  }, [tx, confimedWithPassword]);
+    if (txs && confimedWithPassword) simulateTxs();
+  }, [txs, confimedWithPassword]);
 
 
   const handleApprove = async () => {
-    if (!tx) return;
-    await sendMessage("APPROVAL_MANAGER_RESOLVE_APPROVAL_SIGN_AND_SEND_TRANSACTION", {
+    if (!txs) return;
+    await sendMessage("APPROVAL_MANAGER_RESOLVE_APPROVAL_SIGN_ALL_TRANSACTIONS", {
       id: id!,
       approved: true,
-      tx,
+      txs,
       password,
     });
     window.close();
   };
 
   const handleReject = async () => {
-    if (!tx) return;
-    await sendMessage("APPROVAL_MANAGER_RESOLVE_APPROVAL_SIGN_AND_SEND_TRANSACTION", {
+    if (!txs) return;
+    await sendMessage("APPROVAL_MANAGER_RESOLVE_APPROVAL_SIGN_ALL_TRANSACTIONS", {
       id: id!,
       approved: false,
-      tx,
+      txs,
       password,
     });
     window.close();
@@ -138,8 +141,13 @@ export default function SignAndSendTransactionApproval() {
     );
   }
 
+  const txCount = parsedTxs.length;
+  const simulationResult = simulationResults[selectedTxIndex] ?? null;
+  const parsedTx = parsedTxs[selectedTxIndex] ?? null;
+  const transfers = transfersList[selectedTxIndex] ?? [];
+  const programs = programsList[selectedTxIndex] ?? [];
 
-  // Derived simulation data
+  // Derived simulation data for selected tx
   const simErr = simulationResult?.err ?? null;
   const unitsConsumed = simulationResult?.unitsConsumed;
   const estimatedFee = parsedTx
@@ -155,12 +163,15 @@ export default function SignAndSendTransactionApproval() {
   }, 0);
   const hasBalanceChange = transfers.length > 0;
 
+  // Any simulation error across all txs blocks approve
+  const anySimErr = simulationResults.some((r) => r?.err ?? false);
+
 
   return (
     <SafeArea>
       <div className="flex flex-col h-full p-6">
         {/* Header */}
-        <div className="flex justify-between items-center sticky top-0 z-10 bg-transparent backdrop-blur-sm pb-6">
+        <div className="flex justify-between items-center sticky top-0 z-10 bg-bg/80 backdrop-blur-sm pb-6">
           <ProfileAvatar account={account} accountLoading={false} />
           <button className="flex bg-white/10 items-center gap-1 rounded-full p-2 justify-center">
             <CodeIcon size={14} weight="bold" className="text-gray-400" />
@@ -175,19 +186,44 @@ export default function SignAndSendTransactionApproval() {
             <div className="flex gap-4 items-center">
               <img src={logoUrl} alt="favicon" className="w-12 h-12 rounded-md bg-white/5 p-2" />
               <div>
-                <h2 className="text-sm">Approve Send Transaction Request</h2>
+                <h2 className="text-sm">Approve Sign All Transactions Request</h2>
                 <h2 className="text-xs text-gray-300">{origin?.replace("https://", "").replace("http://", "")}</h2>
               </div>
             </div>
             <div className="rounded bg-primary/20 p-4 mt-8 flex gap-2">
               <div><InfoIcon size={12} weight="fill" className="text-primary" /></div>
-              <h3 className="text-xs">By approving, you authorize <span className="text-primary">{origin}</span> to sign and submit this transaction to the blockchain</h3>
+              <h3 className="text-xs">By approving, you authorize <span className="text-primary">{origin}</span> to sign {txCount} transaction{txCount !== 1 ? "s" : ""}, which may or may not be submitted to the blockchain</h3>
             </div>
           </div>
 
-          {/* Simulation status */}
+          {/* Transaction tabs (when multiple txs) */}
+          {txCount > 1 && (
+            <div className="flex gap-1.5 flex-wrap">
+              {parsedTxs.map((_, i) => {
+                const txSimErr = simulationResults[i]?.err ?? null;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedTxIndex(i)}
+                    className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
+                      selectedTxIndex === i
+                        ? "bg-primary text-white"
+                        : "bg-white/8 text-gray-400 hover:bg-white/12"
+                    }`}
+                  >
+                    Tx {i + 1}
+                    {txSimErr && (
+                      <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-red-400 align-middle" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Simulation status for selected tx */}
           {simulationResult && (
-            <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
               <StatusBadge err={simErr} />
               {simErr && (
                 <span className="text-xs text-red-400/70 truncate max-w-[55%]">
@@ -197,7 +233,7 @@ export default function SignAndSendTransactionApproval() {
             </div>
           )}
 
-          {/* Transaction overview */}
+          {/* Transaction overview for selected tx */}
           {transfers.length > 0 && (
             <SectionCard>
               {transfers.map((t, i) => (
@@ -234,7 +270,7 @@ export default function SignAndSendTransactionApproval() {
             </SectionCard>
           )}
 
-          {/* Simulation details */}
+          {/* Simulation details for selected tx */}
           {simulationResult && (
             <SectionCard>
               {hasBalanceChange && (
@@ -266,7 +302,7 @@ export default function SignAndSendTransactionApproval() {
             </SectionCard>
           )}
 
-          {/* Program interactions */}
+          {/* Program interactions for selected tx */}
           {programs.length > 0 && (
             <div className="flex flex-col gap-1.5">
               <p className="text-xs text-gray-500 px-0.5">Program interactions</p>
@@ -285,7 +321,7 @@ export default function SignAndSendTransactionApproval() {
             </div>
           )}
 
-          {/* Simulation logs (collapsed) */}
+          {/* Simulation logs for selected tx (collapsed) */}
           {simulationResult?.logs && simulationResult.logs.length > 0 && (
             <details className="group">
               <summary className="flex items-center gap-2 cursor-pointer list-none">
@@ -324,11 +360,11 @@ export default function SignAndSendTransactionApproval() {
           </button>
           <button
             onClick={handleApprove}
-            disabled={simErr !== null}
+            disabled={anySimErr}
             className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors rounded-full text-white font-medium w-full text-xs inset-top"
           >
             <CheckIcon size={13} weight="bold" />
-            Approve
+            Approve All
           </button>
         </div>
       </div>

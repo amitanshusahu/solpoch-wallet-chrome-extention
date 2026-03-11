@@ -134,15 +134,45 @@ export abstract class TransactionService {
   static async simulateTransactionUsingTransaction(tx: number[], password: string): Promise<MessageResponse<"SIMULATE_USING_TRANSACTION">> {
     try {
       const transaction = Transaction.from(tx);
-    const signedTx = await this.signTransaction(transaction, password);
-    const config: SimulateTransactionConfig = { commitment: "confirmed" }
-    const simulation = await RpcService.simulateTransaction(signedTx, config);
+      const signedTx = await this.signTransaction(transaction, password);
+      const config: SimulateTransactionConfig = { commitment: "confirmed" }
+      const simulation = await RpcService.simulateTransaction(signedTx, config);
 
-    console.log("Simulation result:", simulation)
-    return {
-      success: true,
-      data: simulation.value,
+      console.log("Simulation result:", simulation)
+      return {
+        success: true,
+        data: simulation.value,
+      }
+    } catch (error) {
+      throw new Error(`Simulation failed: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  static async signAllTransactions(txs: number[][], password: string): Promise<Transaction[]> {
+    const signedTxs: Transaction[] = [];
+    for (const tx of txs) {
+      const transaction = Transaction.from(tx);
+      const signedTx = await this.signTransaction(transaction, password);
+      signedTxs.push(signedTx);
+    }
+    return signedTxs;
+  }
+
+  static async simulateTransactionUsingTransactions(txs: number[][], password: string): Promise<MessageResponse<"SIMULATE_USING_TRANSACTIONS">> {
+    try {
+      const signedTxs = await this.signAllTransactions(txs, password);
+      const config: SimulateTransactionConfig = { commitment: "confirmed" }
+      const simulations = [];
+      for (const signedTx of signedTxs) {
+        const simulation = await RpcService.simulateTransaction(signedTx, config);
+        simulations.push(simulation.value);
+      }
+
+      console.log("Simulations result:", simulations)
+      return {
+        success: true,
+        data: simulations,
+      }
     } catch (error) {
       throw new Error(`Simulation failed: ${error instanceof Error ? error.message : String(error)}`);
     }

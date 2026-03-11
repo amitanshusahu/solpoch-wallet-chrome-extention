@@ -169,3 +169,32 @@ export async function openSignTransactionPopup(
 
   return approvalPromise
 }
+
+export async function openSignAllTransactionsPopup(
+  payload: MessageRequest<"POPUP_SIGN_ALL_TRANSACTIONS">["payload"]
+): Promise<ApprovalManagerResponse["APPROVAL_SIGN_ALL_TRANSACTIONS"]> {
+  console.log('Opening sign all transactions popup with payload:', payload);
+  const id = crypto.randomUUID();
+  const request: ApprovalRequest<"APPROVAL_SIGN_ALL_TRANSACTIONS"> = {
+    id,
+    type: "APPROVAL_SIGN_ALL_TRANSACTIONS",
+    origin: payload.metadata.origin,
+    icon: payload.metadata.favicon,
+    payload: payload.params
+  }
+
+  const approvalPromise = ApprovalManager.createApproval(request);
+
+  const popupWindow = await chrome.windows.create({
+    url: chrome.runtime.getURL("index.html#/sign-all-transactions-approval?id=" + id),
+    type: "popup",
+    width: 400,
+    height: 600,
+  });
+
+  if (popupWindow && popupWindow.id) {
+    ApprovalManager.handleWindowClosed(popupWindow.id, id);
+  }
+
+  return approvalPromise
+}

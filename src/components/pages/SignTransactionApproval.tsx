@@ -186,7 +186,7 @@ export default function SignTransactionApproval() {
 
           {/* Simulation status */}
           {simulationResult && (
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-2">
               <StatusBadge err={simErr} />
               {simErr && (
                 <span className="text-xs text-red-400/70 truncate max-w-[55%]">

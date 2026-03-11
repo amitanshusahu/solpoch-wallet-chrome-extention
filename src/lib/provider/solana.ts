@@ -93,10 +93,43 @@ export class ProviderSolana implements Solpoch {
   }
 
   async signAllTransactions<T extends Transaction | VersionedTransaction>(_transactions: T[]): Promise<T[]> {
-    throw new Error('signAllTransactions is not implemented yet');
+    try {
+      const logoUrl = getLogoUrl();
+      const serializedTxs = _transactions.map((tx) => {
+        const serialized = tx.serialize({
+          requireAllSignatures: false,
+          verifySignatures: false
+        });
+        return Array.from(serialized);
+      });
+      const payload = {
+        metadata: {
+          origin: window.location.origin,
+          favicon: logoUrl
+        },
+        params: {
+          transactions: serializedTxs,
+        }
+      };
+      console.log('Sending signAllTransactions message with payload:', payload);
+      const response = await sendWindowMessage("POPUP_SIGN_ALL_TRANSACTIONS", payload);
+      console.log('Received response for signAllTransactions:', response);
+      const signedTxs = response.transactions.map((tx: number[]) => {
+        const signedTx = Transaction.from(new Uint8Array(tx));
+        return signedTx as T;
+      });
+      return signedTxs;
+    } catch (error) {
+      throw new Error('signAllTransactions error: ' + error);
+    }
   }
 
   async signMessage(_message: Uint8Array): Promise<{ signature: Uint8Array }> {
+    try {
+      // const logoUrl = getLogoUrl();
+    } catch (error) {
+
+    }
     throw new Error('signMessage is not implemented yet');
   }
 

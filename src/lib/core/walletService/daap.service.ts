@@ -1,5 +1,5 @@
 import { vaultService } from "../vault/service";
-import { openApprovalPopup, openSignAndSendPopup, openSignTransactionPopup, openUnlockPopup } from "../../utils/chrome/popups";
+import { openApprovalPopup, openSignAllTransactionsPopup, openSignAndSendPopup, openSignTransactionPopup, openUnlockPopup } from "../../utils/chrome/popups";
 import type { MessageRequest, MessageResponse } from "../../../types/message";
 import { WalletSessionService } from "./session.service";
 import { TransactionService } from "./transaction.service";
@@ -73,5 +73,27 @@ export async function handleSignTransaction(
   return {
     success: userApproval.approved,
     data: { transaction: Array.from(serializeTx) }
+  }
+}
+
+export async function handleSignAllTransactions(
+  payload: MessageRequest<"POPUP_SIGN_ALL_TRANSACTIONS">["payload"],
+): Promise<MessageResponse<"POPUP_SIGN_ALL_TRANSACTIONS">> {
+  await commonChecks();
+  const userApproval = await openSignAllTransactionsPopup(payload);
+  if (!userApproval.approved) {
+    console.error('User rejected the sign transactions request.');
+    throw new Error("User rejected the sign transactions request.");
+  }
+  const signedTx = await TransactionService.signAllTransactions(payload.params.transactions, userApproval.password);
+  const serializeTx = signedTx.map((tx) => {
+    return tx.serialize({
+      requireAllSignatures: false,
+      verifySignatures: false
+    });
+  })
+  return {
+    success: userApproval.approved,
+    data: { transactions: serializeTx.map((tx) => Array.from(tx)) }
   }
 }

@@ -3,6 +3,7 @@ import ConnectApprove from "./components/pages/ConnectApprove";
 import Onboarding from "./components/pages/Onboarding";
 import Recieve from "./components/pages/Recieve";
 import Send from "./components/pages/Send";
+import SignAllTransactionsApproval from "./components/pages/SignAllTransactionsApproval";
 import SignAndSendTransactionApproval from "./components/pages/SignAndSendTransactionApproval";
 import SignTransactionApproval from "./components/pages/SignTransactionApproval";
 import UnlockPopup from "./components/pages/UnlockPopup";
@@ -43,5 +44,9 @@ export const routes = [
   {
     path: '/sign-transaction-approval',
     element: <SignTransactionApproval />
+  },
+  {
+    path: '/sign-all-transactions-approval',
+    element: <SignAllTransactionsApproval />
   }
 ]
