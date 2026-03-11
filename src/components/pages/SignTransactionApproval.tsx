@@ -130,7 +130,13 @@ export default function SignTransactionApproval() {
   }
 
 
-  if (simulating) return <SimulatingOverlay />;
+  if (simulating) {
+    return (
+      <SafeArea>
+        <SimulatingOverlay />
+      </SafeArea>
+    );
+  }
 
   // Derived simulation data
   const simErr = simulationResult?.err ?? null;
@@ -153,7 +159,7 @@ export default function SignTransactionApproval() {
     <SafeArea>
       <div className="flex flex-col h-full p-6">
         {/* Header */}
-        <div className="flex justify-between items-center sticky top-0 z-10 bg-bg/80 backdrop-blur-sm">
+        <div className="flex justify-between items-center sticky top-0 z-10 bg-bg/80 backdrop-blur-sm pb-6">
           <ProfileAvatar account={account} accountLoading={false} />
           <button className="flex bg-white/10 items-center gap-1 rounded-full p-2 justify-center">
             <CodeIcon size={14} weight="bold" className="text-gray-400" />
@@ -161,11 +167,11 @@ export default function SignTransactionApproval() {
         </div>
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto scrollbar-none flex flex-col gap-3">
+        <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col gap-3 pb-6">
 
           {/* Title + origin */}
           <div>
-            <div className="flex gap-4 mt-6 items-center">
+            <div className="flex gap-4 items-center">
               <img src={logoUrl} alt="favicon" className="w-12 h-12 rounded-md bg-white/5 p-2" />
               <div>
                 <h2 className="text-sm">Approve Sign Transaction Request</h2>
@@ -287,7 +293,7 @@ export default function SignTransactionApproval() {
                   <span>View logs ({simulationResult.logs.length})</span>
                 </div>
               </summary>
-              <div className="mt-2 rounded-xl bg-white/3 border border-white/6 p-3 max-h-32 overflow-y-auto scrollbar-none">
+              <div className="mt-2 rounded-xl bg-white/3 border border-white/6 p-3 max-h-32 overflow-y-auto scrollbar-hide">
                 {simulationResult.logs.map((log, i) => (
                   <p key={i} className="text-xs font-mono text-gray-500 leading-5 break-all">
                     {log}
