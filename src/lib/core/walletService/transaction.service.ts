@@ -2,6 +2,9 @@ import { PublicKey, SystemProgram, Transaction, type SimulateTransactionConfig }
 import { vaultService } from "../vault/service"
 import type { MessageResponse } from "../../../types/message"
 import { RpcService } from "../../rpc"
+import bs58 from "bs58";
+import { chains, features } from "../../utils/solana/walletFeatures";
+
 export abstract class TransactionService {
 
   private static async buildTransaction(to: string, amount: number): Promise<{ tx: Transaction; publicKey: string }> {
@@ -194,33 +197,23 @@ export abstract class TransactionService {
   static async signIn(input: string, password: string): Promise<{
     account: {
       address: string,
-      publicKey: string,
-      chains: ["solana:devnet"],
-      features: [
-        "solana:signTransaction",
-        "solana:signAllTransactions",
-        "solana:signMessage",
-        "solana:signIn",
-        "solana:signAndSendTransaction"
-      ]
+      publicKey: number[],
+      chains: typeof chains,
+      features: typeof features
     },
     signedMessage: number[],
     signature: number[],
   }> {
     try {
       const signature = await vaultService.signIn(input, password);
+      const pubkey = (await vaultService.getActiveAccount()).pubkey;
+
       return {
         account: {
-          address: (await vaultService.getActiveAccount()).pubkey,
-          publicKey: (await vaultService.getActiveAccount()).pubkey,
-          chains: ["solana:devnet"],
-          features: [
-            "solana:signTransaction",
-            "solana:signAllTransactions",
-            "solana:signMessage",
-            "solana:signIn",
-            "solana:signAndSendTransaction"
-          ]
+          address: pubkey,
+          publicKey: Array.from(bs58.decode(pubkey)),
+          chains: chains,
+          features: features,
         },
         signedMessage: Array.from(new TextEncoder().encode(input)),
         signature: Array.from(signature.signature)

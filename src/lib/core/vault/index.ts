@@ -43,11 +43,11 @@ export class Vault {
   async create(password: string): Promise<string> {
     const mnemonic = generateMnemonic();
     const encryptedMnemonic = await encryptMnemonic(mnemonic, password);
-    const keypair = publicKeyFromMnemonic(mnemonic, 0);
-    console.log("keypair from mnemonic:", keypair);
+    const base64PublicKey = publicKeyFromMnemonic(mnemonic, 0);
+    console.log("base64PublicKey from mnemonic:", base64PublicKey);
     const vaultData: VaultDataV1 = {
       encryptedMnemonic: encryptedMnemonic,
-      accounts: [{ index: 0, pubkey: keypair }],
+      accounts: [{ index: 0, pubkey: base64PublicKey }],
       activeAccountIndex: 0,
       version: 1,
     };

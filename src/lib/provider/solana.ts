@@ -5,12 +5,18 @@ import type { Solpoch, SolpochEvent } from '../solpoch-wallet-standard/window.ts
 import { sendWindowMessage } from '../utils/chrome/message.ts';
 import { getLogoUrl } from '../utils/dom/getLogoUrl.ts';
 import type { WalletAccount } from '@wallet-standard/base';
-import bs58 from "bs58";
+import bs58 from 'bs58';
+import { chains, features } from '../utils/solana/walletFeatures.ts';
 
 
 export class ProviderSolana implements Solpoch {
   private _publicKey: PublicKey | null = null;
   private _listeners: { [E in keyof SolpochEvent]?: SolpochEvent[E][] } = {};
+  private _account: Readonly<WalletAccount> | null = null;
+
+  get accounts(): readonly WalletAccount[] {
+    return this._account ? [this._account] : [];
+  }
 
   get publicKey(): PublicKey | null {
     return this._publicKey;
@@ -19,8 +25,17 @@ export class ProviderSolana implements Solpoch {
   async connect(_options?: { onlyIfTrusted?: boolean }): Promise<{ publicKey: PublicKey }> {
     try {
       const logoUrl = getLogoUrl();
+      // response.publicKey is in base58 format
       const response = await sendWindowMessage('CONNECT_WALLET', { origin: window.location.origin, logoUrl });
-      this._publicKey = new PublicKey(response.publicKey);
+      const pubkeyBytes = bs58.decode(response.publicKey)
+      this._account = Object.freeze({
+        address: response.publicKey,
+        publicKey: new Uint8Array(pubkeyBytes),
+        chains,
+        features
+      });
+      console.log("ACCOUNT OBJECT ID", this._account)
+      this._publicKey = new PublicKey(pubkeyBytes)
       this._emit('connect');
       return { publicKey: this._publicKey };
     } catch (error) {
@@ -153,8 +168,10 @@ export class ProviderSolana implements Solpoch {
 
   async signIn(_input?: SolanaSignInInput): Promise<SolanaSignInOutput> {
     try {
+      if (!this._account) {
+        throw new Error('Wallet not connected');
+      }
       const logoUrl = getLogoUrl();
-
       const payload = {
         metadata: {
           origin: window.location.origin,
@@ -164,18 +181,9 @@ export class ProviderSolana implements Solpoch {
           input: _input
         }
       };
-
       const response = await sendWindowMessage("POPUP_SIGN_IN", payload);
-
-      const account: WalletAccount = {
-        address: response.account.address,
-        publicKey: bs58.decode(response.account.publicKey),
-        chains: response.account.chains,
-        features: response.account.features
-      };
-
       return {
-        account,
+        account: this._account,
         signedMessage: new Uint8Array(response.signedMessage),
         signature: new Uint8Array(response.signature),
         signatureType: "ed25519"
