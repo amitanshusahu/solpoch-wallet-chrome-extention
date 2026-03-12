@@ -74,7 +74,8 @@ export const GetApprovalsFromManagerRequestSchema = z.object({
   type: z.enum([
     "APPROVAL_SIGN_AND_SEND_TRANSACTION",
     "APPROVAL_SIGN_TRANSACTION",
-    "APPROVAL_SIGN_ALL_TRANSACTIONS"
+    "APPROVAL_SIGN_ALL_TRANSACTIONS",
+    "APPROVAL_SIGN_MESSAGE"
   ]).optional(),
 });
 export type GetApprovalsFromManagerRequest = z.infer<typeof GetApprovalsFromManagerRequestSchema>;
@@ -112,3 +113,14 @@ export const PopupSignTransactionsSchema = z.object({
   }),
 });
 export type PopupSignTransactionsRequest = z.infer<typeof PopupSignTransactionsSchema>;
+
+export const PopupSignMessageSchema = z.object({
+  metadata: z.object({
+    origin: z.string().url("Origin must be a valid URL"),
+    favicon: z.string().optional(),
+  }),
+  params: z.object({
+    message: z.array(z.number()),
+  }),
+});
+export type PopupSignMessageRequest = z.infer<typeof PopupSignMessageSchema>;

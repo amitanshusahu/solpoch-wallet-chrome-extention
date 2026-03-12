@@ -178,4 +178,18 @@ export abstract class TransactionService {
     }
   }
 
+  static async signMessage(message: number[], password: string): Promise<{ signature: number[] }> {
+    try {
+      const uintMessage = new Uint8Array(message);
+
+      const signature = await vaultService.singMessage(uintMessage, password);
+
+      return {
+        signature: Array.from(signature.signature)
+      };
+    } catch (error) {
+      throw new Error(`Sign message failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
 }

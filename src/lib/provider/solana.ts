@@ -126,11 +126,27 @@ export class ProviderSolana implements Solpoch {
 
   async signMessage(_message: Uint8Array): Promise<{ signature: Uint8Array }> {
     try {
-      // const logoUrl = getLogoUrl();
+      const logoUrl = getLogoUrl();
+      const payload = {
+        metadata: {
+          origin: window.location.origin,
+          favicon: logoUrl
+        },
+        params: {
+          message: Array.from(_message),
+        }
+      }
+      const response = await sendWindowMessage("POPUP_SIGN_MESSAGE", payload);
+      const uintSignature = new Uint8Array(response.signature);
+      if (uintSignature.length === 0) {
+        throw new Error('User rejected the sign message request.');
+      }
+      return {
+        signature: uintSignature
+      };
     } catch (error) {
-
+      throw new Error('signMessage error: ' + error);
     }
-    throw new Error('signMessage is not implemented yet');
   }
 
   async signIn(_input?: SolanaSignInInput): Promise<SolanaSignInOutput> {

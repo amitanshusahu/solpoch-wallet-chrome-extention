@@ -1,5 +1,5 @@
 import { vaultService } from "../vault/service";
-import { openApprovalPopup, openSignAllTransactionsPopup, openSignAndSendPopup, openSignTransactionPopup, openUnlockPopup } from "../../utils/chrome/popups";
+import { openApprovalPopup, openSignAllTransactionsPopup, openSignAndSendPopup, openSignMessagePopup, openSignTransactionPopup, openUnlockPopup } from "../../utils/chrome/popups";
 import type { MessageRequest, MessageResponse } from "../../../types/message";
 import { WalletSessionService } from "./session.service";
 import { TransactionService } from "./transaction.service";
@@ -95,5 +95,21 @@ export async function handleSignAllTransactions(
   return {
     success: userApproval.approved,
     data: { transactions: serializeTx.map((tx) => Array.from(tx)) }
+  }
+}
+
+export async function handleSignMessage(
+  payload: MessageRequest<"POPUP_SIGN_MESSAGE">["payload"],
+): Promise<MessageResponse<"POPUP_SIGN_MESSAGE">> {
+  await commonChecks();
+  const userApproval = await openSignMessagePopup(payload);
+  if (!userApproval.approved) {
+    console.error('User rejected the sign message request.');
+    throw new Error("User rejected the sign message request.");
+  }
+  const signedMessage = await TransactionService.signMessage(payload.params.message, userApproval.password);
+  return {
+    success: userApproval.approved,
+    data: { signature: signedMessage.signature }
   }
 }

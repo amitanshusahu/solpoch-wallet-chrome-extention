@@ -1,4 +1,4 @@
-import type { ApprovalManagerResponseRequest, PopupSignTransactionRequest, PopupSignTransactionsRequest, SignAndSendUsingTransactionRequest } from "../../types/message/zod";
+import type { ApprovalManagerResponseRequest, PopupSignMessageRequest, PopupSignTransactionRequest, PopupSignTransactionsRequest, SignAndSendUsingTransactionRequest } from "../../types/message/zod";
 
 // NOTE: IMPORTANT!!!!!!
 // the approval type names and should always start with "APPROVAL_" and should be in uppercase, because we are using these type names as in background/index.ts to forward all req starting with "APPROVAL_" to the approval manager.
@@ -7,7 +7,8 @@ export const ApprovalType = {
   APPROVAL_SIGN_AND_SEND_TRANSACTION: "APPROVAL_SIGN_AND_SEND_TRANSACTION",
   APPROVAL_XYZ: "APPROVAL_XYZ",
   APPROVAL_SIGN_TRANSACTION: "APPROVAL_SIGN_TRANSACTION",
-  APPROVAL_SIGN_ALL_TRANSACTIONS: "APPROVAL_SIGN_ALL_TRANSACTIONS"
+  APPROVAL_SIGN_ALL_TRANSACTIONS: "APPROVAL_SIGN_ALL_TRANSACTIONS",
+  APPROVAL_SIGN_MESSAGE: "APPROVAL_SIGN_MESSAGE",
 } as const;
 
 export interface ApprovalPayload {
@@ -18,6 +19,7 @@ export interface ApprovalPayload {
   };
   APPROVAL_SIGN_TRANSACTION: PopupSignTransactionRequest["params"];
   APPROVAL_SIGN_ALL_TRANSACTIONS: PopupSignTransactionsRequest["params"];
+  APPROVAL_SIGN_MESSAGE: PopupSignMessageRequest["params"];
 }
 
 export interface ApprovalManagerResponse {
@@ -32,6 +34,9 @@ export interface ApprovalManagerResponse {
   };
   APPROVAL_SIGN_ALL_TRANSACTIONS: ApprovalManagerResponseRequest & {
     txs: PopupSignTransactionsRequest["params"]["transactions"];
+    password: string;
+  };
+  APPROVAL_SIGN_MESSAGE: ApprovalManagerResponseRequest & {
     password: string;
   };
 }
