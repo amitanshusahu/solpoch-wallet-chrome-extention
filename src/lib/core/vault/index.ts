@@ -101,4 +101,17 @@ export class Vault {
     return { signature };
   }
 
+  async signIn(input: string, password: string): Promise<{ signature: Uint8Array }> {
+    const isUnlocked = await this.getIsUnlocked();
+    if (!isUnlocked) {
+      throw new Error("Vault locked")
+    }
+    const mnemonic = await this.decryptMnemonicFromPassword(password);
+    const activeAccount = await this.getActiveAccount();
+    const keypair = keypairFromMnemonic(mnemonic, activeAccount.index)
+    const message = new TextEncoder().encode(input);
+    const signature = nacl.sign.detached(message, keypair.secretKey);
+    return { signature };
+  }
+
 }

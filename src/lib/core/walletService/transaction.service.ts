@@ -2,7 +2,6 @@ import { PublicKey, SystemProgram, Transaction, type SimulateTransactionConfig }
 import { vaultService } from "../vault/service"
 import type { MessageResponse } from "../../../types/message"
 import { RpcService } from "../../rpc"
-
 export abstract class TransactionService {
 
   private static async buildTransaction(to: string, amount: number): Promise<{ tx: Transaction; publicKey: string }> {
@@ -189,6 +188,45 @@ export abstract class TransactionService {
       };
     } catch (error) {
       throw new Error(`Sign message failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  static async signIn(input: string, password: string): Promise<{
+    account: {
+      address: string,
+      publicKey: string,
+      chains: ["solana:devnet"],
+      features: [
+        "solana:signTransaction",
+        "solana:signAllTransactions",
+        "solana:signMessage",
+        "solana:signIn",
+        "solana:signAndSendTransaction"
+      ]
+    },
+    signedMessage: number[],
+    signature: number[],
+  }> {
+    try {
+      const signature = await vaultService.signIn(input, password);
+      return {
+        account: {
+          address: (await vaultService.getActiveAccount()).pubkey,
+          publicKey: (await vaultService.getActiveAccount()).pubkey,
+          chains: ["solana:devnet"],
+          features: [
+            "solana:signTransaction",
+            "solana:signAllTransactions",
+            "solana:signMessage",
+            "solana:signIn",
+            "solana:signAndSendTransaction"
+          ]
+        },
+        signedMessage: Array.from(new TextEncoder().encode(input)),
+        signature: Array.from(signature.signature)
+      };
+    } catch (error) {
+      throw new Error(`Sign in failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

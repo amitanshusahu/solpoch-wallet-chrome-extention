@@ -227,3 +227,32 @@ export async function openSignMessagePopup(
 
   return approvalPromise
 }
+
+export async function openSignInPopup(
+  payload: MessageRequest<"POPUP_SIGN_IN">["payload"]
+): Promise<ApprovalManagerResponse["APPROVAL_SIGN_IN"]> {
+  console.log('Opening sign message popup with payload:', payload);
+  const id = crypto.randomUUID();
+  const request: ApprovalRequest<"APPROVAL_SIGN_IN"> = {
+    id,
+    type: "APPROVAL_SIGN_IN",
+    origin: payload.metadata.origin,
+    icon: payload.metadata.favicon,
+    payload: payload.params
+  }
+
+  const approvalPromise = ApprovalManager.createApproval(request);
+
+  const popupWindow = await chrome.windows.create({
+    url: chrome.runtime.getURL("index.html#/signin-approval?id=" + id),
+    type: "popup",
+    width: 400,
+    height: 600,
+  });
+
+  if (popupWindow && popupWindow.id) {
+    ApprovalManager.handleWindowClosed(popupWindow.id, id);
+  }
+
+  return approvalPromise
+}

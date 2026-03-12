@@ -5,6 +5,7 @@ import Recieve from "./components/pages/Recieve";
 import Send from "./components/pages/Send";
 import SignAllTransactionsApproval from "./components/pages/SignAllTransactionsApproval";
 import SignAndSendTransactionApproval from "./components/pages/SignAndSendTransactionApproval";
+import SignInApproval from "./components/pages/SignIn";
 import SignMessage from "./components/pages/SignMessage";
 import SignTransactionApproval from "./components/pages/SignTransactionApproval";
 import UnlockPopup from "./components/pages/UnlockPopup";
@@ -53,5 +54,9 @@ export const routes = [
   {
     path: '/sign-message-approval',
     element: <SignMessage />
+  },
+  {
+    path: '/signin-approval',
+    element: <SignInApproval />
   }
 ]

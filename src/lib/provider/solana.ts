@@ -4,6 +4,8 @@ import type { SolanaSignInInput, SolanaSignInOutput } from '@solana/wallet-stand
 import type { Solpoch, SolpochEvent } from '../solpoch-wallet-standard/window.ts';
 import { sendWindowMessage } from '../utils/chrome/message.ts';
 import { getLogoUrl } from '../utils/dom/getLogoUrl.ts';
+import type { WalletAccount } from '@wallet-standard/base';
+import bs58 from "bs58";
 
 
 export class ProviderSolana implements Solpoch {
@@ -88,7 +90,7 @@ export class ProviderSolana implements Solpoch {
       const signedTx = Transaction.from(response.transaction);
       return signedTx as T;
     } catch (error) {
-      throw new Error('signTransaction is not implemented yet');
+      throw new Error('signTransaction error: ' + error);
     }
   }
 
@@ -150,7 +152,38 @@ export class ProviderSolana implements Solpoch {
   }
 
   async signIn(_input?: SolanaSignInInput): Promise<SolanaSignInOutput> {
-    throw new Error('signIn is not implemented yet');
+    try {
+      const logoUrl = getLogoUrl();
+
+      const payload = {
+        metadata: {
+          origin: window.location.origin,
+          favicon: logoUrl
+        },
+        params: {
+          input: _input
+        }
+      };
+
+      const response = await sendWindowMessage("POPUP_SIGN_IN", payload);
+
+      const account: WalletAccount = {
+        address: response.account.address,
+        publicKey: bs58.decode(response.account.publicKey),
+        chains: response.account.chains,
+        features: response.account.features
+      };
+
+      return {
+        account,
+        signedMessage: new Uint8Array(response.signedMessage),
+        signature: new Uint8Array(response.signature),
+        signatureType: "ed25519"
+      };
+
+    } catch (error) {
+      throw new Error('signIn error: ' + error);
+    }
   }
 
   // --------------- event emitter ---------------

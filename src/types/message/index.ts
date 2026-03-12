@@ -1,8 +1,7 @@
 import type { SimulatedTransactionResponse } from "@solana/web3.js";
 import type { Account } from "../vault";
-import type { ApprovalResponseRequest, ConnectWalletRequest, GetApprovalsFromManagerRequest, PopupSignAndSendTransactionRequest, PopupSignMessageRequest, PopupSignTransactionRequest, PopupSignTransactionsRequest, SendTransactionRequest, SimulateUsingTransactionRequest, SimulateUsingTransactionsRequest, UnlockPopupResponseRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
+import type { ApprovalResponseRequest, ConnectWalletRequest, GetApprovalsFromManagerRequest, PopupSignAndSendTransactionRequest, PopupSignInRequest, PopupSignMessageRequest, PopupSignTransactionRequest, PopupSignTransactionsRequest, SendTransactionRequest, SimulateUsingTransactionRequest, SimulateUsingTransactionsRequest, UnlockPopupResponseRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
 import type { ApprovalManagerResponse, ApprovalPayload, ApprovalRequest } from "../../scripts/background/ApprovalManager";
-
 
 /**
  * easy to understnad, generated types (mapping) and then merged them to MessageMap ( type MessageMap =  {...} & ApprovalResolveMap)
@@ -158,7 +157,27 @@ export type MessageMap = {
     req: PopupSignMessageRequest;
     res: { signature: number[] };
   }
-  
+
+  POPUP_SIGN_IN: {
+    req: PopupSignInRequest;
+    res: {
+      account: {
+        address: string,
+        publicKey: string,
+        chains: ["solana:devnet"],
+        features: [
+          "solana:signTransaction",
+          "solana:signAllTransactions",
+          "solana:signMessage",
+          "solana:signIn",
+          "solana:signAndSendTransaction"
+        ]
+      },
+      signedMessage: number[],
+      signature: number[],
+    };
+  }
+
 } & ApprovalResolveMap;
 
 

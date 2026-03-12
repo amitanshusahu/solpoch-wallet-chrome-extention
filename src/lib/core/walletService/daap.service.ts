@@ -1,9 +1,10 @@
 import { vaultService } from "../vault/service";
-import { openApprovalPopup, openSignAllTransactionsPopup, openSignAndSendPopup, openSignMessagePopup, openSignTransactionPopup, openUnlockPopup } from "../../utils/chrome/popups";
+import { openApprovalPopup, openSignAllTransactionsPopup, openSignAndSendPopup, openSignInPopup, openSignMessagePopup, openSignTransactionPopup, openUnlockPopup } from "../../utils/chrome/popups";
 import type { MessageRequest, MessageResponse } from "../../../types/message";
 import { WalletSessionService } from "./session.service";
 import { TransactionService } from "./transaction.service";
 import { Transaction } from "@solana/web3.js";
+import { createSignInMessage } from "../../utils/helper/createSignInMessage";
 
 async function commonChecks() {
   const vaultExists = await vaultService.exists();
@@ -111,5 +112,22 @@ export async function handleSignMessage(
   return {
     success: userApproval.approved,
     data: { signature: signedMessage.signature }
+  }
+}
+
+export async function handleSignIn(
+  payload: MessageRequest<"POPUP_SIGN_IN">["payload"],
+): Promise<MessageResponse<"POPUP_SIGN_IN">> {
+  await commonChecks();
+  const userApproval = await openSignInPopup(payload);
+  if (!userApproval.approved) {
+    console.error('User rejected the sign in request.');
+    throw new Error("User rejected the sign in request.");
+  }
+  const signInMessage = createSignInMessage(payload.params.input);
+  const signInOutPut = await TransactionService.signIn(signInMessage, userApproval.password);
+  return {
+    success: userApproval.approved,
+    data: signInOutPut
   }
 }
