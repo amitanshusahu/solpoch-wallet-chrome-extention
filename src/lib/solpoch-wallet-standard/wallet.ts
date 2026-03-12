@@ -307,10 +307,12 @@ export class SolpochWallet implements Wallet {
 
         if (inputs.length > 1) {
             for (const input of inputs) {
-                outputs.push(await this.#solpoch.signIn(input));
+                const output = await this.#solpoch.signIn(input);
+                outputs.push({ ...output, account: this.#account! });
             }
         } else {
-            return [await this.#solpoch.signIn(inputs[0])];
+            const output = await this.#solpoch.signIn(inputs[0]);
+            return [{ ...output, account: this.#account! }];
         }
 
         return outputs;
