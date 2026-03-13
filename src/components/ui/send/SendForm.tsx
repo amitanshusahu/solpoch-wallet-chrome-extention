@@ -16,8 +16,8 @@ export default function SendForm({
   return (
     <div className="h-full flex flex-col justify-between">
       <div className="flex flex-col justify-center items-center w-full pt-16">
-        <div className="mb-4">
-          <img src="/solana-logo.png" alt="Solana Logo" className="h-10 w-10" />
+        <div className="flex bg-white/5 rounded-full p-4 mb-4">
+          <img src="/solana-logo.png" alt="logo" className="w-8" />
         </div>
         <h1 className="text-sm font-bold mb-8">Send SOL</h1>
         <input

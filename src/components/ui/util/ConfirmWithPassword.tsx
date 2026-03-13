@@ -1,7 +1,7 @@
 import { useState, type ChangeEvent } from "react";
 import { useAccountStore } from "../../../store";
 import { sendMessage } from "../../../lib/utils/chrome/message";
-import { DetectiveIcon, InfoIcon, LockIcon } from "@phosphor-icons/react";
+import { InfoIcon, LockIcon } from "@phosphor-icons/react";
 
 export default function ConfirmWithPassword({
   password,
@@ -30,12 +30,12 @@ export default function ConfirmWithPassword({
 
   return (
     <div className="w-full h-full bg-bg flex flex-col justify-between items-center">
-      <div className="h-full flex flex-col justify-center items-center w-full">
+      <div className="h-full flex flex-col w-full pt-14 px-4">
         <div className="flex items-center justify-center pb-16">
           {/* <img src="/logo-long.png" alt="logo" className="h-[50px]" /> */}
           <div className="flex flex-col items-center gap-2">
-            <div className="flex bg-white/10 rounded-full p-4">
-              <DetectiveIcon size={50} className="text-primary" />
+            <div className="flex bg-white/10 rounded-full p-1">
+              <img src="/detective.svg" alt="detective" className="h-[130px] w-[130px]"/>
             </div>
             <p className="text-xs text-gray-400 mt-1">just to be extra sure that it's you</p>
           </div>
@@ -43,12 +43,12 @@ export default function ConfirmWithPassword({
         <div className="w-full flex flex-col">
           <div className="flex gap-2">
             <LockIcon size={16} className="text-gray-400" />
-            <h1 className="text-sm mb-2 font-bold">Enter Unlock Pin</h1>
+            <h1 className="text-sm mb-2 font-semibold text-gray-200">Enter Unlock Pin</h1>
           </div>
           <input
             type="password"
             placeholder="Enter your password"
-            className="w-full px-3 py-1.5 rounded bg-white/5 border border-gray-700 mb-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="w-full px-3 py-1.5 rounded bg-white/5 border border-gray-700 mb-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent tracking-[5px] placeholder:tracking-normal"
             value={password}
             onChange={handelPasswordChange}
           />

@@ -16,6 +16,7 @@ import {
   GlobeIcon,
   InfoIcon,
   LightningIcon,
+  TerminalWindowIcon,
   WarningCircleIcon,
   XIcon,
 } from "@phosphor-icons/react";
@@ -189,9 +190,10 @@ export default function SignTransactionApproval() {
             <div className="flex flex-col gap-2">
               <StatusBadge err={simErr} />
               {simErr && (
-                <span className="text-xs text-red-400/70 truncate max-w-[55%]">
-                  {typeof simErr === "string" ? simErr : JSON.stringify(simErr)}
-                </span>
+                <div className="flex items-center gap-1.5 bg-red-500/5 border border-red-500/10 rounded-full px-3 py-1 w-full">
+                  <TerminalWindowIcon size={12} weight="fill" className="text-red-500/50" />
+                  <span className="text-xs text-red-500/50">{typeof simErr === "string" ? simErr : JSON.stringify(simErr)}</span>
+                </div>
               )}
             </div>
           )}
