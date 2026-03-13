@@ -4,6 +4,7 @@ import { sendMessage } from "../../lib/utils/chrome/message";
 import { useAccountStore } from "../../store";
 import SafeArea from "../ui/layout/SafeArea";
 import { CopyIcon, InfoIcon } from "@phosphor-icons/react";
+import { AllowedOriginService } from "../../lib/core/walletService/allowedOrigin.service";
 
 export default function ConnectApprove() {
   const [searchParams] = useSearchParams();
@@ -29,8 +30,6 @@ export default function ConnectApprove() {
     fetchAccount();
   }, [setAccount]);
 
-  console.log(searchParams);
-
   const handleCopyKey = async () => {
     if (account) {
       await navigator.clipboard.writeText(account.pubkey);
@@ -41,6 +40,7 @@ export default function ConnectApprove() {
 
   const handleApprove = async () => {
     setLoading(true);
+    await AllowedOriginService.push(origin!);
     await sendMessage("APPROVAL_RESPONSE", { approved: true });
     window.close();
   };

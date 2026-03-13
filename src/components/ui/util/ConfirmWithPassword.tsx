@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { useAccountStore } from "../../../store";
 import { sendMessage } from "../../../lib/utils/chrome/message";
 import { InfoIcon, LockIcon } from "@phosphor-icons/react";
@@ -14,9 +14,24 @@ export default function ConfirmWithPassword({
 }) {
   const setAccount = useAccountStore((state) => state.setAccount);
   const [infoText, setInfoText] = useState("Your password is required to confirm this action.");
+
+  useEffect(() => {
+    async function fetchAccount() {
+      try {
+        const activeAccount = await sendMessage("VAULT_GET_ACTIVE_ACCOUNT", undefined);
+        setAccount(activeAccount);
+      } catch (error) {
+        console.error("Failed to fetch active account:", error);
+      }
+    }
+    fetchAccount();
+  }, [setAccount]);
+
+
   const handelPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
   }
+
   async function handelConfirm(password: string) {
     try {
       const account = await sendMessage("VAULT_UNLOCK", { password });
@@ -35,7 +50,7 @@ export default function ConfirmWithPassword({
           {/* <img src="/logo-long.png" alt="logo" className="h-[50px]" /> */}
           <div className="flex flex-col items-center gap-2">
             <div className="flex bg-white/10 rounded-full p-1">
-              <img src="/detective.svg" alt="detective" className="h-[130px] w-[130px]"/>
+              <img src="/detective.svg" alt="detective" className="h-[130px] w-[130px]" />
             </div>
             <p className="text-xs text-gray-400 mt-1">just to be extra sure that it's you</p>
           </div>

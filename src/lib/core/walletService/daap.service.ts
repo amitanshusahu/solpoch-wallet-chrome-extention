@@ -5,6 +5,7 @@ import { WalletSessionService } from "./session.service";
 import { TransactionService } from "./transaction.service";
 import { Transaction } from "@solana/web3.js";
 import { createSignInMessage } from "../../utils/helper/createSignInMessage";
+import { AllowedOriginService } from "./allowedOrigin.service";
 
 async function commonChecks() {
   const vaultExists = await vaultService.exists();
@@ -27,6 +28,15 @@ export async function handleConnectWallet(
 ): Promise<MessageResponse<"CONNECT_WALLET">> {
   const { origin, logoUrl } = payload;
   await commonChecks();
+  const isAllowed = await AllowedOriginService.isExist(origin);
+  if (isAllowed) {
+    console.log(`Origin ${origin} is already allowed. Auto-approving connection request.`);
+    const account = await vaultService.getActiveAccount();
+    return {
+      success: true,
+      data: { publicKey: account.pubkey }
+    };
+  }
   const userApproval = await openApprovalPopup(origin, logoUrl);
   if (!userApproval) {
     console.error(`User rejected the connection request from origin: ${origin}`);
