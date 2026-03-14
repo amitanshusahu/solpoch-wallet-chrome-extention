@@ -5,7 +5,7 @@ import SafeArea from "./components/ui/layout/SafeArea";
 import { useAccountStore } from "./store";
 import Unlock from "./components/ui/home/Unlock";
 import ProfileAvatar from "./components/ui/home/ProfileAvatar";
-import { ArrowDownLeftIcon, ArrowsLeftRightIcon, ArrowUpRightIcon, DotsThreeIcon, GearIcon } from "@phosphor-icons/react";
+import { ArrowDownLeftIcon, ArrowsLeftRightIcon, ArrowUpRightIcon, DotsThreeIcon, GearIcon, UserCirclePlusIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { RpcService } from "./lib/rpc";
 import { lamportsToSol } from "./lib/utils/solana/solLamportConversion";
@@ -59,9 +59,17 @@ function App() {
         <div className="bg-img p-6">
           <div className="flex items-center justify-between">
             <ProfileAvatar account={account} accountLoading={false} />
-            <button className="p-1.5 rounded-full bg-white/5">
-              <GearIcon size={24} className="text-gray-300" weight="fill" />
-            </button>
+            <div className="flex gap-1">
+              <button
+                className="p-1.5 rounded-full bg-white/5"
+                onClick={() => navigate("/accounts")}
+              >
+                <UserCirclePlusIcon size={24} className="text-gray-300" weight="fill" />
+              </button>
+              <button className="p-1.5 rounded-full bg-white/5">
+                <GearIcon size={24} className="text-gray-300" weight="fill" />
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-col items-center justify-center">

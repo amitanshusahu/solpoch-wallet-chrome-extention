@@ -149,3 +149,13 @@ export const PopupSignInSchema = z.object({
   }),
 });
 export type PopupSignInRequest = z.infer<typeof PopupSignInSchema>;
+
+export const AddAccount = z.object({
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+})
+export type AddAccountRequest = z.infer<typeof AddAccount>;
+
+export const SetActiveAccountRequestSchema = z.object({
+  index: z.number().min(0, "Account index must be a non-negative integer"),
+});
+export type SetActiveAccountRequest = z.infer<typeof SetActiveAccountRequestSchema>;

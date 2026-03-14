@@ -58,13 +58,37 @@ export class Vault {
   async unlock(password: string): Promise<Account> {
     const vaultData = await this.getVaultData();
     const isPasswordCorrect = await checkPassword(vaultData.encryptedMnemonic, password);
-
     if (!isPasswordCorrect) {
       throw new Error("Incorrect password");
     }
     await WalletSessionService.setUnlocked(true);
     const activeAccount = await this.getActiveAccount();
     return activeAccount;
+  }
+
+  async addAccount(password: string): Promise<Account> {
+    const vaultData = await this.getVaultData();
+    const newIndex = vaultData.accounts.length;
+    const newPubkey = publicKeyFromMnemonic(await this.decryptMnemonicFromPassword(password), newIndex);
+    const newAccount: Account = { index: newIndex, pubkey: newPubkey };
+    vaultData.accounts.push(newAccount);
+    await this.saveVaultData(vaultData);
+    return newAccount;
+  }
+
+  async setActiveAccount(index: number): Promise<Account> {
+    const vaultData = await this.getVaultData();
+    if (index < 0 || index >= vaultData.accounts.length) {
+      throw new Error("Invalid account index");
+    }
+    vaultData.activeAccountIndex = index;
+    await this.saveVaultData(vaultData);
+    return vaultData.accounts[index];
+  }
+
+  async getAccounts(): Promise<Account[]> {
+    const vaultData = await this.getVaultData();
+    return vaultData.accounts;
   }
 
   async getActiveAccount(): Promise<Account> {
@@ -82,9 +106,8 @@ export class Vault {
     if (!isUnlocked) {
       throw new Error("Vault locked")
     }
-    const mnemonic = await this.decryptMnemonicFromPassword(password);
     const activeAccount = await this.getActiveAccount();
-    const keypair = keypairFromMnemonic(mnemonic, activeAccount.index)
+    const keypair = keypairFromMnemonic(await this.decryptMnemonicFromPassword(password), activeAccount.index)
     tx.sign(keypair)
     return tx
   }
@@ -94,9 +117,8 @@ export class Vault {
     if (!isUnlocked) {
       throw new Error("Vault locked")
     }
-    const mnemonic = await this.decryptMnemonicFromPassword(password);
     const activeAccount = await this.getActiveAccount();
-    const keypair = keypairFromMnemonic(mnemonic, activeAccount.index)
+    const keypair = keypairFromMnemonic(await this.decryptMnemonicFromPassword(password), activeAccount.index)
     const signature = nacl.sign.detached(message, keypair.secretKey);
     return { signature };
   }
@@ -106,9 +128,8 @@ export class Vault {
     if (!isUnlocked) {
       throw new Error("Vault locked")
     }
-    const mnemonic = await this.decryptMnemonicFromPassword(password);
     const activeAccount = await this.getActiveAccount();
-    const keypair = keypairFromMnemonic(mnemonic, activeAccount.index)
+    const keypair = keypairFromMnemonic(await this.decryptMnemonicFromPassword(password), activeAccount.index)
     const message = new TextEncoder().encode(input);
     const signature = nacl.sign.detached(message, keypair.secretKey);
     return { signature };

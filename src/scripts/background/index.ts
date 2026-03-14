@@ -20,7 +20,9 @@ import {
   PopupSignTransactionsSchema,
   SimuateUsingTransactionsSchema,
   PopupSignMessageSchema,
-  PopupSignInSchema
+  PopupSignInSchema,
+  AddAccount,
+  SetActiveAccountRequestSchema
 } from "../../types/message/zod";
 import { ApprovalManager, type ApprovalManagerResponse } from "./ApprovalManager";
 
@@ -234,6 +236,35 @@ chrome.runtime.onMessage.addListener(
               success: response.success,
               data: response.data,
               error: response?.error,
+            });
+            break;
+          }
+
+          case "ADD_ACCOUNT": {
+            const payload = AddAccount.parse(message.payload);
+            const response = await vaultService.addAccount(payload.password);
+            sendResponse({
+              success: true,
+              data: response,
+            });
+            break;
+          }
+
+          case "SET_ACTIVE_ACCOUNT": {
+            const payload = SetActiveAccountRequestSchema.parse(message.payload);
+            const response = await vaultService.setActiveAccount(payload.index);
+            sendResponse({
+              success: true,
+              data: response,
+            });
+            break;
+          }
+
+          case "GET_ACCOUNTS": {
+            const accounts = await vaultService.getAccounts();
+            sendResponse({
+              success: true,
+              data: accounts,
             });
             break;
           }

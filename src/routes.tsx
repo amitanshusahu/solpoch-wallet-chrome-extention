@@ -1,4 +1,5 @@
 import App from "./App";
+import Accounts from "./components/pages/Accounts";
 import ConnectApprove from "./components/pages/ConnectApprove";
 import Onboarding from "./components/pages/Onboarding";
 import Recieve from "./components/pages/Recieve";
@@ -58,5 +59,9 @@ export const routes = [
   {
     path: '/signin-approval',
     element: <SignInApproval />
+  },
+  {
+    path: '/accounts',
+    element: <Accounts />
   }
 ]
