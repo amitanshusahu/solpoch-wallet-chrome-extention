@@ -5,6 +5,7 @@ import type { Account, VaultDataV1 } from "../../../types/vault";
 import type { Transaction } from "@solana/web3.js";
 import { WalletSessionService } from "../walletService/session.service";
 import nacl from "tweetnacl";
+import { AccountBookService } from "../walletService/accountBook.service";
 
 export class Vault {
 
@@ -73,6 +74,7 @@ export class Vault {
     const newAccount: Account = { index: newIndex, pubkey: newPubkey };
     vaultData.accounts.push(newAccount);
     await this.saveVaultData(vaultData);
+    await AccountBookService.add({ name: `A${newIndex}`, address: newPubkey });
     return newAccount;
   }
 

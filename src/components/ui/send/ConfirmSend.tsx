@@ -21,6 +21,7 @@ import SectionCard from "../popup/signAndSendTransaction/SectionCard";
 import Row from "../popup/signAndSendTransaction/Row";
 import { shortAddress } from "../../../lib/utils/solana/parse";
 import { useAccountStore } from "../../../store";
+import { AccountBookService } from "../../../lib/core/walletService/accountBook.service";
 
 export default function ConfirmSend({
   amount,
@@ -77,6 +78,8 @@ export default function ConfirmSend({
         password,
       });
       setSignature(response);
+      const dateTime = new Date().toLocaleString();
+      await AccountBookService.add({ name: `${dateTime}`, address: toAddress });
     } catch (error) {
       console.error("Send error:", error);
     } finally {
@@ -176,7 +179,7 @@ export default function ConfirmSend({
         {/* Header */}
         <div className="flex gap-3 items-center mb-1">
           <div className="flex bg-white/5 rounded-full p-4">
-            <img src="/solana-logo.png" alt="logo"  className="w-8"/>
+            <img src="/solana-logo.png" alt="logo" className="w-8" />
           </div>
           <div>
             <h2 className="text-sm">Confirm Send</h2>
