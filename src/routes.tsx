@@ -4,7 +4,7 @@ import ConnectApprove from "./components/pages/ConnectApprove";
 import Onboarding from "./components/pages/Onboarding";
 import Recieve from "./components/pages/Recieve";
 import Send from "./components/pages/Send";
-import SendTokens from "./components/pages/SendTokens";
+import SendSplTokens from "./components/pages/SendSPLtokens";
 import SignAllTransactionsApproval from "./components/pages/SignAllTransactionsApproval";
 import SignAndSendTransactionApproval from "./components/pages/SignAndSendTransactionApproval";
 import SignInApproval from "./components/pages/SignIn";
@@ -72,6 +72,6 @@ export const routes = [
   },
   {
     path: '/tokens/send/:mint',
-    element: <SendTokens />
+    element: <SendSplTokens />
   }
 ]

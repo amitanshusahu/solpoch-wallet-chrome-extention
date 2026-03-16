@@ -1,5 +1,5 @@
 import { SystemInstruction, SystemProgram, type Transaction } from "@solana/web3.js";
-import { lamportsToSol } from "./solLamportConversion";
+import { lamportsToSol } from "./conversion";
 
 // Well-known program labels
 export const PROGRAM_LABELS: Record<string, string> = {

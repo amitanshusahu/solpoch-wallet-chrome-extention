@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { sendMessage } from "../../lib/utils/chrome/message";
 import { Transaction, type SimulatedTransactionResponse } from "@solana/web3.js";
 import ConfirmWithPassword from "../ui/util/ConfirmWithPassword";
-import { lamportsToSol } from "../../lib/utils/solana/solLamportConversion";
+import { lamportsToSol } from "../../lib/utils/solana/conversion";
 import ProfileAvatar from "../ui/home/ProfileAvatar";
 import {
   ArrowDownIcon,

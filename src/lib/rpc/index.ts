@@ -19,7 +19,7 @@ const rpcEndpoints = {
 const rpcConnection = new Connection(rpcEndpoints.devnet, "confirmed");
 
 export class RpcService {
-  private static getConnection(): Connection {
+  static getConnection(): Connection {
     return rpcConnection;
   }
 

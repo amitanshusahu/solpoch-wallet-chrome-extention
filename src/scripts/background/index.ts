@@ -22,7 +22,8 @@ import {
   PopupSignMessageSchema,
   PopupSignInSchema,
   AddAccount,
-  SetActiveAccountRequestSchema
+  SetActiveAccountRequestSchema,
+  SendTokenTransactionRequestSchema
 } from "../../types/message/zod";
 import { ApprovalManager, type ApprovalManagerResponse } from "./ApprovalManager";
 
@@ -229,7 +230,7 @@ chrome.runtime.onMessage.addListener(
             break;
           }
 
-          case "SIMULATE_USING_TRANSACTIONS": {
+          case "SIMULATE_USING_TRANSACTIONS": { // there is a "s" in the end
             const payload = SimuateUsingTransactionsSchema.parse(message.payload);
             const response = await TransactionService.simulateTransactionUsingTransactions(payload.transactions, payload.password);
             sendResponse({
@@ -265,6 +266,27 @@ chrome.runtime.onMessage.addListener(
             sendResponse({
               success: true,
               data: accounts,
+            });
+            break;
+          }
+
+          case "SIGN_AND_SEND_TOKEN_TRANSACTION": {
+            const payload = SendTokenTransactionRequestSchema.parse(message.payload);
+            const response = await TransactionService.transferTokens(payload.mint, payload.destination, payload.amount, payload.password);
+            sendResponse({
+              success: response.success,
+              data: response.data,
+            });
+            break;
+          }
+
+          case "SIMULATE_TOKEN_TRANSACTION": {
+            const payload = SendTokenTransactionRequestSchema.parse(message.payload);
+            const response = await TransactionService.simulateTransferTokens(payload.mint, payload.destination, payload.amount, payload.password);
+            sendResponse({
+              success: response.success,
+              data: response.data,
+              error: response?.error,
             });
             break;
           }

@@ -4,6 +4,7 @@ import type { MessageResponse } from "../../../types/message"
 import { RpcService } from "../../rpc"
 import bs58 from "bs58";
 import { chains, features } from "../../utils/solana/walletFeatures";
+import { createTransferInstruction, getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 export abstract class TransactionService {
 
@@ -221,6 +222,61 @@ export abstract class TransactionService {
     } catch (error) {
       throw new Error(`Sign in failed: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  static async simulateTransferTokens(
+    mint: string,
+    destination: string,
+    amount: number,
+    password: string
+  ) {
+    try {
+      const connection = RpcService.getConnection();
+      const activeAccount = await vaultService.getActiveAccount();
+
+      const mintPubkey = new PublicKey(mint);
+
+      const myTokenAccount = getAssociatedTokenAddressSync(
+        mintPubkey,
+        new PublicKey(activeAccount.pubkey)
+      );
+
+      const destinationTokenAccount = getAssociatedTokenAddressSync(
+        mintPubkey,
+        new PublicKey(destination)
+      );
+
+      const ix = createTransferInstruction(
+        myTokenAccount,
+        destinationTokenAccount,
+        new PublicKey(activeAccount.pubkey),
+        amount
+      );
+      const tx = new Transaction().add(ix);
+      tx.feePayer = new PublicKey(activeAccount.pubkey);
+      tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+
+      const signedTx = await this.signTransaction(tx, password);
+      const txArray = signedTx.serialize();
+      const sim = await this.simulateTransactionUsingTransaction(Array.from(txArray), password);
+      return sim;
+    } catch (error) {
+      console.error("Simulate transfer tokens failed:", error);
+      throw new Error(`Simulate transfer tokens failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  static async transferTokens(
+    mint: string,
+    destination: string,
+    amount: number,
+    password: string
+  ) {
+    const signature = await vaultService.transferTokens(mint, destination, amount, password);
+    return {
+      success: true,
+      data: signature,
+    };
   }
 
 }

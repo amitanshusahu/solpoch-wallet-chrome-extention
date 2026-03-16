@@ -159,3 +159,11 @@ export const SetActiveAccountRequestSchema = z.object({
   index: z.number().min(0, "Account index must be a non-negative integer"),
 });
 export type SetActiveAccountRequest = z.infer<typeof SetActiveAccountRequestSchema>;
+
+export const SendTokenTransactionRequestSchema = z.object({
+  mint: z.string().min(1, "Mint address is required"),
+  destination: z.string().min(1, "Recipient address is required"),
+  amount: z.number().positive("Amount must be a positive number"),
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+});
+export type SendTokenTransactionRequest = z.infer<typeof SendTokenTransactionRequestSchema>;

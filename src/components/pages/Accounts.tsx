@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import type { Account } from "../../types/vault";
 import { sendMessage } from "../../lib/utils/chrome/message";
 import { RpcService } from "../../lib/rpc";
-import { lamportsToSol } from "../../lib/utils/solana/solLamportConversion";
+import { lamportsToSol } from "../../lib/utils/solana/conversion";
 import ConfirmWithPassword from "../ui/util/ConfirmWithPassword";
 
 export default function Accounts() {

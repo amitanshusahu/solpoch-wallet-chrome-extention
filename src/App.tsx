@@ -8,7 +8,7 @@ import ProfileAvatar from "./components/ui/home/ProfileAvatar";
 import { ArrowDownLeftIcon, ArrowsLeftRightIcon, ArrowUpRightIcon, DotsThreeIcon, GearIcon, UserCirclePlusIcon } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { RpcService } from "./lib/rpc";
-import { lamportsToSol } from "./lib/utils/solana/solLamportConversion";
+import { lamportsToSol } from "./lib/utils/solana/conversion";
 import TokenList from "./components/ui/home/TokenList";
 // import PopCard from "./components/ui/layout/PopCard";
 

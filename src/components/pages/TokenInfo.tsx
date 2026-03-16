@@ -62,7 +62,7 @@ export default function TokenInfo() {
   }, [mintAddressBase58]);
 
   const handleSendClick = () => {
-    navigate(`/tokens/send/${mintAddressBase58}?name=${mintInfo ? mintInfo.name : "Unknown Token"}&logo=${mintInfo && mintInfo.image ? mintInfo.image : ""}&symbol=${mintInfo ? mintInfo.symbol : ""}`);
+    navigate(`/tokens/send/${mintAddressBase58}?name=${mintInfo ? mintInfo.name : "Unknown Token"}&logo=${mintInfo && mintInfo.image ? mintInfo.image : ""}&symbol=${mintInfo ? mintInfo.symbol : ""}&decimals=${mintInfo ? mintInfo.decimals : ""}`);
   }
 
   return (
@@ -77,7 +77,7 @@ export default function TokenInfo() {
           <div className="flex flex-col items-center justify-center">
             <div className="mt-6 flex flex-col items-center justify-center">
               <h3 className="text-xs text-gray-300 mb-2">Total Balance</h3>
-              <h1 className="text-5xl font-semibold">{ATAInfo ? ATAInfo.balance : "0.00"} {mintInfo && mintInfo.symbol ? mintInfo.symbol : "NA"}</h1>
+              <h1 className="text-5xl font-semibold">{ATAInfo ? ATAInfo.balance : "0.00"} {mintInfo && mintInfo.symbol ? mintInfo.symbol : "N/A"}</h1>
               <p className="text-sm text-gray-400 mt-2">{mintInfo && mintInfo.name ? mintInfo.name : "Unknown Token"}</p>
             </div>
 
@@ -119,7 +119,7 @@ export default function TokenInfo() {
           <SectionCard>
             <Row
               label=" Associated Token Account"
-              value={ATAInfo && ATAInfo.tokenAccount ? <AddressCopyButton addressToCopy={ATAInfo.tokenAccount} /> : "NA"}
+              value={ATAInfo && ATAInfo.tokenAccount ? <AddressCopyButton addressToCopy={ATAInfo.tokenAccount} /> : "N/A"}
               accent="green"
             />
           </SectionCard>
@@ -128,36 +128,36 @@ export default function TokenInfo() {
           <SectionCard>
             <Row
               label="Mint Address"
-              value={mintInfo && mintInfo.mintAddress ? <AddressCopyButton addressToCopy={mintInfo.mintAddress} /> : "NA"}
+              value={mintInfo && mintInfo.mintAddress ? <AddressCopyButton addressToCopy={mintInfo.mintAddress} /> : "N/A"}
               icon={mintInfo && mintInfo.image ? <img src={mintInfo.image} alt={`${mintInfo.name} logo`} className="w-3 h-3 rounded-full" /> : undefined}
             />
             <Row
               label="Name"
-              value={mintInfo && mintInfo.name ? mintInfo.name : "NA"}
+              value={mintInfo && mintInfo.name ? mintInfo.name : "N/A"}
             />
             <Row
               label="Symbol"
-              value={mintInfo && mintInfo.symbol ? mintInfo.symbol : "NA"}
+              value={mintInfo && mintInfo.symbol ? mintInfo.symbol : "N/A"}
             />
             <Row
               label="Decimals"
-              value={mintInfo && mintInfo.decimals ? mintInfo.decimals : "NA"}
+              value={mintInfo && mintInfo.decimals ? mintInfo.decimals : "N/A"}
             />
             <Row
               label="Supply"
-              value={mintInfo && mintInfo.supply ? mintInfo.supply : "NA"}
+              value={mintInfo && mintInfo.supply ? mintInfo.supply : "N/A"}
             />
             <Row
               label="Mint Authority"
-              value={mintInfo && mintInfo.mintAuthority ? <AddressCopyButton addressToCopy={mintInfo.mintAuthority} /> : "NA"}
+              value={mintInfo && mintInfo.mintAuthority ? <AddressCopyButton addressToCopy={mintInfo.mintAuthority} /> : "N/A"}
             />
             <Row
               label="Freeze Authority"
-              value={mintInfo && mintInfo.freezeAuthority ? <AddressCopyButton addressToCopy={mintInfo.freezeAuthority} /> : "NA"}
+              value={mintInfo && mintInfo.freezeAuthority ? <AddressCopyButton addressToCopy={mintInfo.freezeAuthority} /> : "N/A"}
             />
             <Row
               label="Metadata"
-              value={mintInfo && mintInfo.metadata ? <AddressCopyButton addressToCopy={mintInfo.metadata} /> : "NA"}
+              value={mintInfo && mintInfo.metadata ? <AddressCopyButton addressToCopy={mintInfo.metadata} /> : "N/A"}
               icon={<LinkIcon size={12} className="text-gray-400" />}
             />
           </SectionCard>

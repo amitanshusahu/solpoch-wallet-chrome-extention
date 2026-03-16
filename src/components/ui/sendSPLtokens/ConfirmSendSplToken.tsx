@@ -13,8 +13,8 @@ import type { SimulatedTransactionResponse } from "@solana/web3.js";
 import { useEffect, useState } from "react";
 import { sendMessage } from "../../../lib/utils/chrome/message";
 import ConfirmWithPassword from "../util/ConfirmWithPassword";
-import { useNavigate } from "react-router-dom";
-import { solToLamports, lamportsToSol } from "../../../lib/utils/solana/conversion";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { lamportsToSol, tokensToLargestUnit } from "../../../lib/utils/solana/conversion";
 import SimulatingOverlay from "../popup/signAndSendTransaction/SimulatingOverlay";
 import StatusBadge from "../popup/signAndSendTransaction/StatusBadge";
 import SectionCard from "../popup/signAndSendTransaction/SectionCard";
@@ -23,13 +23,21 @@ import { shortAddress } from "../../../lib/utils/solana/parse";
 import { useAccountStore } from "../../../store";
 import { AccountBookService } from "../../../lib/core/walletService/accountBook.service";
 
-export default function ConfirmSend({
+export default function ConfirmSendSplToken({
   amount,
   toAddress,
 }: {
   amount: string;
   toAddress: string;
 }) {
+  const param = useParams();
+  const [searchParams] = useSearchParams();
+  // const tokenName = searchParams.get("name");
+  const tokenLogo = searchParams.get("logo");
+  const tokenSymbol = searchParams.get("symbol");
+  const tokenDecimals = searchParams.get("decimals");
+  const mintAddressBase58 = param.mint;
+
   const [simulating, setSimulating] = useState(false);
   const [simulationResult, setSimulationResult] = useState<SimulatedTransactionResponse | null>(null);
   const [password, setPassword] = useState<string>("");
@@ -42,11 +50,16 @@ export default function ConfirmSend({
 
   useEffect(() => {
     async function simulate() {
+      if (!mintAddressBase58 || !toAddress || !amount || !password) {
+        setCanSend(false);
+        return;
+      }
       setSimulating(true);
       try {
-        const response = await sendMessage("SIMULATE_TRANSACTION", {
-          to: toAddress,
-          amount: solToLamports(parseFloat(amount)),
+        const response = await sendMessage("SIMULATE_TOKEN_TRANSACTION", {
+          mint: mintAddressBase58,
+          destination: toAddress,
+          amount: tokensToLargestUnit(parseFloat(amount), parseInt(tokenDecimals || "0")),
           password,
         });
         setSimulationResult(response);
@@ -64,6 +77,10 @@ export default function ConfirmSend({
   }, [toAddress, amount, confimedWithPassword]);
 
   const handleSend = async () => {
+    if (!mintAddressBase58 || !toAddress || !amount || !password) {
+      setCanSend(false);
+      return;
+    }
     setCanSend(false);
     setIsSending(true);
     if (password.length === 0) {
@@ -72,9 +89,10 @@ export default function ConfirmSend({
       return;
     }
     try {
-      const response = await sendMessage("SIGN_AND_SEND_TRANSACTION", {
-        to: toAddress,
-        amount: solToLamports(parseFloat(amount)),
+      const response = await sendMessage("SIGN_AND_SEND_TOKEN_TRANSACTION", {
+        mint: mintAddressBase58,
+        destination: toAddress,
+        amount: tokensToLargestUnit(parseFloat(amount), parseInt(tokenDecimals || "0")),
         password,
       });
       setSignature(response);
@@ -146,7 +164,7 @@ export default function ConfirmSend({
           />
           <Row
             label="Amount"
-            value={`${amount} SOL`}
+            value={`${amount} ${tokenSymbol || "Tokens"}`}
             icon={<CurrencyDollarIcon size={13} />}
             accent="red"
           />
@@ -179,7 +197,7 @@ export default function ConfirmSend({
         {/* Header */}
         <div className="flex gap-3 items-center mb-1">
           <div className="flex bg-white/5 rounded-full p-4">
-            <img src="/solana-logo.png" alt="logo" className="w-8" />
+            <img src={tokenLogo || "/logo.png"} alt="logo" className="w-8" />
           </div>
           <div>
             <h2 className="text-sm">Confirm Send</h2>
@@ -218,7 +236,7 @@ export default function ConfirmSend({
                   </div>
                 </div>
                 <p className="text-xs font-semibold text-red-400 shrink-0">
-                  -{amount} SOL
+                  -{amount} {tokenSymbol || "Tokens"}
                 </p>
               </div>
             </div>
@@ -245,7 +263,7 @@ export default function ConfirmSend({
             <SectionCard>
               <Row
                 label="Amount"
-                value={`${amount} SOL`}
+                value={`${amount} ${tokenSymbol || "Tokens"}`}
                 icon={<CurrencyDollarIcon size={13} />}
                 accent="red"
               />
