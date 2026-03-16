@@ -4,7 +4,7 @@ import type { MessageResponse } from "../../../types/message"
 import { RpcService } from "../../rpc"
 import bs58 from "bs58";
 import { chains, features } from "../../utils/solana/walletFeatures";
-import { createTransferInstruction, getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { createTransferInstruction, getAssociatedTokenAddressSync, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 export abstract class TransactionService {
 
@@ -272,11 +272,47 @@ export abstract class TransactionService {
     amount: number,
     password: string
   ) {
-    const signature = await vaultService.transferTokens(mint, destination, amount, password);
-    return {
-      success: true,
-      data: signature,
-    };
+    try {
+      const activeAccount = await vaultService.getActiveAccount();
+      const myTokenAccount = await vaultService.getOrCreateAssociatedTokenAccounts(activeAccount.pubkey, mint, password);
+      const destinationTokenAccount = await vaultService.getOrCreateAssociatedTokenAccounts(destination, mint, password);
+
+      const source = new PublicKey(myTokenAccount);
+      const dest = new PublicKey(destinationTokenAccount);
+      const ownerPublicKey = new PublicKey(activeAccount.pubkey);
+      const programId = TOKEN_PROGRAM_ID;
+      const { blockhash, lastValidBlockHeight } = await RpcService.getLatestBlockhash()
+      const transaction = new Transaction().add(
+        createTransferInstruction(source, dest, ownerPublicKey, amount, [], programId),
+      );
+      transaction.feePayer = new PublicKey(activeAccount.pubkey);
+      transaction.recentBlockhash = blockhash;
+
+      const signedTx = await this.signTransaction(transaction, password);
+      const signature = await RpcService.sendRawTransaction(signedTx);
+      const confirmed = await this.pollForConfirmation(
+        signature,
+        lastValidBlockHeight
+      )
+
+      if (!confirmed.success) {
+        console.error("Transaction failed or expired", confirmed.error);
+        return {
+          success: false,
+          data: signature,
+          error: confirmed.error ?? "Transaction confirmation failed",
+        }
+      } else {
+        console.log("Transaction confirmed", signature);
+        return {
+          success: true,
+          data: signature,
+        }
+      }
+    } catch (error) {
+      console.error("Transfer tokens failed:", error);
+      throw new Error(`Transfer tokens failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
 }

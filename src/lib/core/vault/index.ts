@@ -2,11 +2,11 @@ import { checkPassword, decryptMnemonic, encryptMnemonic } from "../crypto";
 import { generateMnemonic } from "bip39";
 import { keypairFromMnemonic, publicKeyFromMnemonic } from "../derivation";
 import type { Account, VaultDataV1 } from "../../../types/vault";
-import { PublicKey, type Transaction, type TransactionSignature } from "@solana/web3.js";
+import { PublicKey, type Transaction } from "@solana/web3.js";
 import { WalletSessionService } from "../walletService/session.service";
 import nacl from "tweetnacl";
 import { AccountBookService } from "../walletService/accountBook.service";
-import { getOrCreateAssociatedTokenAccount, transfer } from "@solana/spl-token";
+import { getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
 import { RpcService } from "../../rpc";
 
 export class Vault {
@@ -139,34 +139,19 @@ export class Vault {
     return { signature };
   }
 
-  async transferTokens(mint: string, destination: string, amount: number, password: string): Promise<TransactionSignature> {
+  async getOrCreateAssociatedTokenAccounts(owner: string, mintAddress: string, password: string): Promise<string> {
     const connection = RpcService.getConnection();
     const activeAccount = await this.getActiveAccount();
     const payer = keypairFromMnemonic(await this.decryptMnemonicFromPassword(password), activeAccount.index)
-    const myTokenAccount = await getOrCreateAssociatedTokenAccount(
+
+    const tokenAccounts = await getOrCreateAssociatedTokenAccount(
       connection,
       payer,
-      new PublicKey(mint),
-      new PublicKey(payer.publicKey)
-    );
-    const destinationTokenAccount = await getOrCreateAssociatedTokenAccount(
-      connection,
-      payer,
-      new PublicKey(mint),
-      new PublicKey(destination)
+      new PublicKey(mintAddress),
+      new PublicKey(owner)
     );
 
-    const signature = await transfer(
-      connection,
-      payer,
-      myTokenAccount.address,
-      destinationTokenAccount.address,
-      payer.publicKey,
-      amount
-    );
-
-    return signature;
-
+    return tokenAccounts.address.toBase58();
   }
 
 }
