@@ -9,6 +9,7 @@ import { ArrowDownLeftIcon, ArrowsLeftRightIcon, ArrowUpRightIcon, DotsThreeIcon
 import { useQuery } from "@tanstack/react-query";
 import { RpcService } from "./lib/rpc";
 import { lamportsToSol } from "./lib/utils/solana/solLamportConversion";
+import TokenList from "./components/ui/home/TokenList";
 // import PopCard from "./components/ui/layout/PopCard";
 
 function App() {
@@ -120,93 +121,7 @@ function App() {
 
         </div>
 
-        <div className="p-6">
-          <h2 className="text-sm">Tokens</h2>
-
-          <div className="flex justify-between items-center mt-2 p-4 bg-white/5 rounded-lg">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm uppercase">A</div>
-              <div>
-                <h3 className="text-sm">Amit Coin</h3>
-                <p className="text-xs text-gray-500">0.00</p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-0.5 items-end">
-              <p className="text-sm">$17,000</p>
-              <p className="text-xs text-emerald-500">+2.5%</p>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center mt-2 p-4 bg-white/5 rounded-lg">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm uppercase">K</div>
-              <div>
-                <h3 className="text-sm">Kirat Coin</h3>
-                <p className="text-xs text-gray-500">0.00</p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-0.5 items-end">
-              <p className="text-sm">$17,000</p>
-              <p className="text-xs text-emerald-500">+2.5%</p>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center mt-2 p-4 bg-white/5 rounded-lg">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm uppercase">S</div>
-              <div>
-                <h3 className="text-sm">Jupiter</h3>
-                <p className="text-xs text-gray-500">0.00</p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-0.5 items-end">
-              <p className="text-sm">$17,000</p>
-              <p className="text-xs text-emerald-500">+2.5%</p>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center mt-2 p-4 bg-white/5 rounded-lg">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm uppercase">S</div>
-              <div>
-                <h3 className="text-sm">Solana</h3>
-                <p className="text-xs text-gray-500">0.00</p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-0.5 items-end">
-              <p className="text-sm">$17,000</p>
-              <p className="text-xs text-emerald-500">+2.5%</p>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center mt-2 p-4 bg-white/5 rounded-lg">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm uppercase">S</div>
-              <div>
-                <h3 className="text-sm">Solana</h3>
-                <p className="text-xs text-gray-500">0.00</p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-0.5 items-end">
-              <p className="text-sm">$17,000</p>
-              <p className="text-xs text-emerald-500">+2.5%</p>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center mt-2 p-4 bg-white/5 rounded-lg">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm uppercase">S</div>
-              <div>
-                <h3 className="text-sm">Solana</h3>
-                <p className="text-xs text-gray-500">0.00</p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-0.5 items-end">
-              <p className="text-sm">$17,000</p>
-              <p className="text-xs text-emerald-500">+2.5%</p>
-            </div>
-          </div>
-        </div>
+        <TokenList />
 
       </div>
     </SafeArea>

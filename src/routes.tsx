@@ -4,11 +4,13 @@ import ConnectApprove from "./components/pages/ConnectApprove";
 import Onboarding from "./components/pages/Onboarding";
 import Recieve from "./components/pages/Recieve";
 import Send from "./components/pages/Send";
+import SendTokens from "./components/pages/SendTokens";
 import SignAllTransactionsApproval from "./components/pages/SignAllTransactionsApproval";
 import SignAndSendTransactionApproval from "./components/pages/SignAndSendTransactionApproval";
 import SignInApproval from "./components/pages/SignIn";
 import SignMessage from "./components/pages/SignMessage";
 import SignTransactionApproval from "./components/pages/SignTransactionApproval";
+import TokenInfo from "./components/pages/TokenInfo";
 import UnlockPopup from "./components/pages/UnlockPopup";
 
 export const routes = [
@@ -63,5 +65,13 @@ export const routes = [
   {
     path: '/accounts',
     element: <Accounts />
+  },
+  {
+    path: '/token/:mint',
+    element: <TokenInfo />
+  },
+  {
+    path: '/tokens/send/:mint',
+    element: <SendTokens />
   }
 ]
