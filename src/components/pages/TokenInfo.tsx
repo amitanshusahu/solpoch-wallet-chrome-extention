@@ -1,7 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom"
 import SafeArea from "../ui/layout/SafeArea";
 import { useAccountStore } from "../../store";
-import { useEffect, useState } from "react";
 import { RpcService } from "../../lib/rpc";
 import ProfileAvatar from "../ui/home/ProfileAvatar";
 import { ArrowDownLeftIcon, ArrowUpRightIcon, ClockCounterClockwiseIcon, LinkIcon } from "@phosphor-icons/react";
@@ -9,6 +8,7 @@ import BackButton from "../ui/util/BackButton";
 import SectionCard from "../ui/popup/signAndSendTransaction/SectionCard";
 import Row from "../ui/popup/signAndSendTransaction/Row";
 import AddressCopyButton from "../ui/util/AddressWithCopyButton";
+import { useQuery } from "@tanstack/react-query";
 
 export default function TokenInfo() {
   const param = useParams();
@@ -17,52 +17,71 @@ export default function TokenInfo() {
   const account = useAccountStore((state) => state.account);
   const navigate = useNavigate();
 
-  const [ATAInfo, ATAAccountInfo] = useState<{
-    mint: any;
-    balance: any;
-    decimals: any;
-    tokenAccount: string;
-  } | null>(null);
-  const [mintInfo, setMintInfo] = useState<{
-    mintAddress: string;
-    name: string | null;
-    symbol: string | null;
-    uri: string | null;
-    image: any;
-    description: any;
-    decimals: number;
-    supply: string;
-    mintAuthority: string | null;
-    freezeAuthority: string | null;
-    metadata: any;
-  } | null>(null);
+  // const [ATAInfo, ATAAccountInfo] = useState<{
+  //   mint: any;
+  //   balance: any;
+  //   decimals: any;
+  //   tokenAccount: string;
+  // } | null>(null);
+  // const [mintInfo, setMintInfo] = useState<{
+  //   mintAddress: string;
+  //   name: string | null;
+  //   symbol: string | null;
+  //   uri: string | null;
+  //   image: any;
+  //   description: any;
+  //   decimals: number;
+  //   supply: string;
+  //   mintAuthority: string | null;
+  //   freezeAuthority: string | null;
+  //   metadata: any;
+  // } | null>(null);
 
-  useEffect(() => {
-    async function fetchATA() {
-      if (!account || !mintAddressBase58) return;
+  // useEffect(() => {
+  //   async function fetchATA() {
+  //     if (!account || !mintAddressBase58) return;
+  //     const ata = await RpcService.getAssociatedTokenAccountInfo(account.pubkey, mintAddressBase58);
+  //     ATAAccountInfo(ata);
+  //   }
+
+  //   if (!ATAInfo) {
+  //     fetchATA();
+  //   }
+  // }, [account, mintAddressBase58]);
+
+  // useEffect(() => {
+  //   async function fetchMintInfo() {
+  //     if (!mintAddressBase58) return;
+  //     const mintInfo = await RpcService.getMintTokenInfo(mintAddressBase58);
+  //     setMintInfo(mintInfo);
+  //   }
+
+  //   if (!mintInfo) {
+  //     fetchMintInfo();
+  //   }
+  // }, [mintAddressBase58]);
+
+  const ataInfoQuery = useQuery({
+    queryKey: ["ataInfo", account?.pubkey.toString(), mintAddressBase58],
+    queryFn: async () => {
+      if (!account || !mintAddressBase58) return null;
       const ata = await RpcService.getAssociatedTokenAccountInfo(account.pubkey, mintAddressBase58);
-      ATAAccountInfo(ata);
-    }
+      return ata;
+    },
+    enabled: !!account && !!mintAddressBase58,
+  })
 
-    if (!ATAInfo) {
-      fetchATA();
-    }
-  }, [account, mintAddressBase58]);
-
-  useEffect(() => {
-    async function fetchMintInfo() {
-      if (!mintAddressBase58) return;
+  const mintInfoQuery = useQuery({
+    queryKey: ["mintInfo", mintAddressBase58],
+    queryFn: async () => {
+      if (!mintAddressBase58) return null;
       const mintInfo = await RpcService.getMintTokenInfo(mintAddressBase58);
-      setMintInfo(mintInfo);
+      return mintInfo;
     }
-
-    if (!mintInfo) {
-      fetchMintInfo();
-    }
-  }, [mintAddressBase58]);
+  })
 
   const handleSendClick = () => {
-    navigate(`/tokens/send/${mintAddressBase58}?name=${mintInfo ? mintInfo.name : "Unknown Token"}&logo=${mintInfo && mintInfo.image ? mintInfo.image : ""}&symbol=${mintInfo ? mintInfo.symbol : ""}&decimals=${mintInfo ? mintInfo.decimals : ""}`);
+    navigate(`/tokens/send/${mintAddressBase58}?name=${mintInfoQuery.data ? mintInfoQuery.data.name : "Unknown Token"}&logo=${mintInfoQuery.data && mintInfoQuery.data.image ? mintInfoQuery.data.image : ""}&symbol=${mintInfoQuery.data ? mintInfoQuery.data.symbol : ""}&decimals=${mintInfoQuery.data ? mintInfoQuery.data.decimals : ""}`);
   }
 
   return (
@@ -77,8 +96,8 @@ export default function TokenInfo() {
           <div className="flex flex-col items-center justify-center">
             <div className="mt-6 flex flex-col items-center justify-center">
               <h3 className="text-xs text-gray-300 mb-2">Total Balance</h3>
-              <h1 className="text-5xl font-semibold">{ATAInfo ? ATAInfo.balance : "0.00"} {mintInfo && mintInfo.symbol ? mintInfo.symbol : "N/A"}</h1>
-              <p className="text-sm text-gray-400 mt-2">{mintInfo && mintInfo.name ? mintInfo.name : "Unknown Token"}</p>
+              <h1 className="text-5xl font-semibold">{ataInfoQuery.data ? ataInfoQuery.data.balance : "0.00"} {mintInfoQuery.data && mintInfoQuery.data.symbol ? mintInfoQuery.data.symbol : "N/A"}</h1>
+              <p className="text-sm text-gray-400 mt-2">{mintInfoQuery.data && mintInfoQuery.data.name ? mintInfoQuery.data.name : "Unknown Token"}</p>
             </div>
 
             <div className="mt-6 flex gap-4 flex-wrap">
@@ -119,7 +138,7 @@ export default function TokenInfo() {
           <SectionCard>
             <Row
               label=" Associated Token Account"
-              value={ATAInfo && ATAInfo.tokenAccount ? <AddressCopyButton addressToCopy={ATAInfo.tokenAccount} /> : "N/A"}
+              value={ataInfoQuery.data && ataInfoQuery.data.tokenAccount ? <AddressCopyButton addressToCopy={ataInfoQuery.data.tokenAccount} /> : "N/A"}
               accent="green"
             />
           </SectionCard>
@@ -128,36 +147,36 @@ export default function TokenInfo() {
           <SectionCard>
             <Row
               label="Mint Address"
-              value={mintInfo && mintInfo.mintAddress ? <AddressCopyButton addressToCopy={mintInfo.mintAddress} /> : "N/A"}
-              icon={mintInfo && mintInfo.image ? <img src={mintInfo.image} alt={`${mintInfo.name} logo`} className="w-3 h-3 rounded-full" /> : undefined}
+              value={mintInfoQuery.data && mintInfoQuery.data.mintAddress ? <AddressCopyButton addressToCopy={mintInfoQuery.data.mintAddress} /> : "N/A"}
+              icon={mintInfoQuery.data && mintInfoQuery.data.image ? <img src={mintInfoQuery.data.image} alt={`${mintInfoQuery.data.name} logo`} className="w-3 h-3 rounded-full" /> : undefined}
             />
             <Row
               label="Name"
-              value={mintInfo && mintInfo.name ? mintInfo.name : "N/A"}
+              value={mintInfoQuery.data && mintInfoQuery.data.name ? mintInfoQuery.data.name : "N/A"}
             />
             <Row
               label="Symbol"
-              value={mintInfo && mintInfo.symbol ? mintInfo.symbol : "N/A"}
+              value={mintInfoQuery.data && mintInfoQuery.data.symbol ? mintInfoQuery.data.symbol : "N/A"}
             />
             <Row
               label="Decimals"
-              value={mintInfo && mintInfo.decimals ? mintInfo.decimals : "N/A"}
+              value={mintInfoQuery.data && mintInfoQuery.data.decimals ? mintInfoQuery.data.decimals : "N/A"}
             />
             <Row
               label="Supply"
-              value={mintInfo && mintInfo.supply ? mintInfo.supply : "N/A"}
+              value={mintInfoQuery.data && mintInfoQuery.data.supply ? mintInfoQuery.data.supply : "N/A"}
             />
             <Row
               label="Mint Authority"
-              value={mintInfo && mintInfo.mintAuthority ? <AddressCopyButton addressToCopy={mintInfo.mintAuthority} /> : "N/A"}
+              value={mintInfoQuery.data && mintInfoQuery.data.mintAuthority ? <AddressCopyButton addressToCopy={mintInfoQuery.data.mintAuthority} /> : "N/A"}
             />
             <Row
               label="Freeze Authority"
-              value={mintInfo && mintInfo.freezeAuthority ? <AddressCopyButton addressToCopy={mintInfo.freezeAuthority} /> : "N/A"}
+              value={mintInfoQuery.data && mintInfoQuery.data.freezeAuthority ? <AddressCopyButton addressToCopy={mintInfoQuery.data.freezeAuthority} /> : "N/A"}
             />
             <Row
               label="Metadata"
-              value={mintInfo && mintInfo.metadata ? <AddressCopyButton addressToCopy={mintInfo.metadata} /> : "N/A"}
+              value={mintInfoQuery.data && mintInfoQuery.data.metadata ? <AddressCopyButton addressToCopy={mintInfoQuery.data.metadata} /> : "N/A"}
               icon={<LinkIcon size={12} className="text-gray-400" />}
             />
           </SectionCard>

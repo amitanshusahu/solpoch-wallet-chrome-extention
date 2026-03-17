@@ -1,39 +1,38 @@
 import { useNavigate } from "react-router-dom";
 import { useAccountStore } from "../../../store";
 import { CaretRightIcon, InfoIcon } from "@phosphor-icons/react";
-import { useEffect, useState } from "react";
 import { RpcService } from "../../../lib/rpc";
+import { useQuery } from "@tanstack/react-query";
 
 export default function TokenList() {
 
   const account = useAccountStore((state) => state.account);
   const navigate = useNavigate();
-  const [tokens, setTokens] = useState<
-    {
-      metadata: {
-        name: string;
-        symbol: string;
-        uri: string;
-        json: any;
-      } | null;
-      mint: any;
-      balance: any;
-      decimals: any;
-      tokenAccount: string;
-    }[]
-  >([]);
 
-  useEffect(() => {
-    async function fetchTokens() {
-      if (!account) return;
+  const tokensQuery = useQuery({
+    queryKey: ["tokens", account?.pubkey.toString()],
+    queryFn: async () => {
+      if (!account) return [];
       const tokens = await RpcService.getTokenList(account.pubkey);
       console.log("Fetched tokens:", tokens);
-      setTokens(tokens);
-    }
-    fetchTokens();
-  }, [account])
+      return tokens;
+    },
+    staleTime: 10 * 60 * 1000, // 5 minutes
+  })
 
-  if (tokens.length === 0) {
+  if (tokensQuery.isLoading) {
+    return (
+      <div className="p-6">
+        <h2 className="text-sm text-gray-300">Tokens</h2>
+        <div className="rounded bg-primary/20 p-4 mt-4 flex gap-2">
+          <div><InfoIcon size={12} weight="fill" className="text-primary animate-pulse" /></div>
+          <h3 className="text-xs">Loading your tokens...</h3>
+        </div>
+      </div>
+    )
+  }
+
+  if (tokensQuery.data?.length === 0) {
     return (
       <div className="p-6">
         <h2 className="text-sm text-gray-300">Tokens</h2>
@@ -66,7 +65,7 @@ export default function TokenList() {
       </div> */}
 
       {
-        tokens.map((t, index) => (
+        tokensQuery.data?.map((t, index) => (
           <div className="flex justify-between items-center p-4 bg-white/5 rounded-lg" key={index}>
             <div className="flex items-center gap-2">
               {/* <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm uppercase">A</div> */}
