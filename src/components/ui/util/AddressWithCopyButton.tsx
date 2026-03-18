@@ -6,7 +6,7 @@ export default function AddressCopyButton({ addressToCopy }: { addressToCopy: st
   };
   return (
     <div className="flex justify-center items-center gap-2">
-      <button onClick={() => handleCopyKey(addressToCopy)} className="text-xs">
+      <button onClick={() => handleCopyKey(addressToCopy)} className="text-xs copy">
         <CopyIcon size={14} className="text-gray-200" />
       </button>
       <span className="text-xs">{addressToCopy.slice(0, 6)}...{addressToCopy.slice(-4)}</span>

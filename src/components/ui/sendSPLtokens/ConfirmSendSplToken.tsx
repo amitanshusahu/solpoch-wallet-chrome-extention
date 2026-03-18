@@ -66,7 +66,7 @@ export default function ConfirmSendSplToken({
         setCanSend(!response?.err);
       } catch (error) {
         console.error("Simulation error:", error);
-        setCanSend(false);
+        setCanSend(true);
       } finally {
         setSimulating(false);
       }

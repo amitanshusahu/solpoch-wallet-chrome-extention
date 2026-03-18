@@ -7,10 +7,12 @@ export default function ConfirmWithPassword({
   password,
   setPassword,
   setConfimedWithPassword,
+  confirmationCallback,
 }: {
   password: string;
   setPassword: (password: string) => void;
   setConfimedWithPassword: (confirmed: boolean) => void;
+  confirmationCallback?: () => Promise<void>;
 }) {
   const setAccount = useAccountStore((state) => state.setAccount);
   const [infoText, setInfoText] = useState("Your password is required to confirm this action.");
@@ -37,6 +39,9 @@ export default function ConfirmWithPassword({
       const account = await sendMessage("VAULT_UNLOCK", { password });
       setAccount(account);
       setConfimedWithPassword(true);
+      if (confirmationCallback) {
+        await confirmationCallback();
+      }
     } catch (error) {
       setInfoText("Incorrect password. Please try again.");
       setConfimedWithPassword(false);

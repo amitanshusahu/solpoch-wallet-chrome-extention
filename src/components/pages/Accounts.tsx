@@ -18,7 +18,7 @@ export default function Accounts() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [balanceMap, setBalanceMap] = useState<Record<string, number>>({});
   const [password, setPassword] = useState<string>("");
-  const [confimedWithPassword, setConfimedWithPassword] = useState(false);
+  const [confimedWithPassword, setConfimedWithPassword] = useState(true);
 
   const fetchAccounts = async () => {
     const accounts = await sendMessage("GET_ACCOUNTS", undefined);
@@ -36,13 +36,8 @@ export default function Accounts() {
     fetchAccounts();
   }, [])
 
-  const [isKeyCopied, setIsKeyCopied] = useState(false);
-  const handleCopyKey = async () => {
-    if (account) {
-      await navigator.clipboard.writeText(account.pubkey);
-      setIsKeyCopied(true);
-      setTimeout(() => setIsKeyCopied(false), 2000);
-    }
+  const handleCopyKey = async (copyString: string) => {
+    await navigator.clipboard.writeText(copyString);
   };
 
   const setActiveAccount = async (index: number) => {
@@ -55,9 +50,15 @@ export default function Accounts() {
   }
 
   const handleAddAccount = async () => {
+    if (password.length === 0) {
+      setConfimedWithPassword(false);
+      return;
+    }
     const response = await sendMessage("ADD_ACCOUNT", { password: password });
     await fetchAccounts();
     setActiveAccount(response.index);
+    setPassword("");
+    setConfimedWithPassword(true);
   }
 
   if (!confimedWithPassword) {
@@ -68,6 +69,7 @@ export default function Accounts() {
             password={password}
             setPassword={setPassword}
             setConfimedWithPassword={setConfimedWithPassword}
+            confirmationCallback={handleAddAccount}
           />
         </div>
       </SafeArea>
@@ -87,7 +89,7 @@ export default function Accounts() {
 
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col gap-3 pb-6">
-          
+
           {/* accounts list */}
           <div className="flex flex-col gap-2">
             {
@@ -105,10 +107,8 @@ export default function Accounts() {
                     </div>
                   </div>
                   <div className="flex gap-0.5 items-end">
-                    <button className="p-2 text-xs rounded-full bg-white/5 flex justify-center items-center" onClick={handleCopyKey}>
-                      {
-                        isKeyCopied ? "Copied!" : <CopyIcon size={14} className="text-gray-200" />
-                      }
+                    <button className="p-2 text-xs rounded-full bg-white/5 flex justify-center items-center copy" onClick={() => handleCopyKey(acc.pubkey)}>
+                      <CopyIcon size={14} className="text-gray-200" />
                     </button>
                   </div>
                 </div>
