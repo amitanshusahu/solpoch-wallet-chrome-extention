@@ -23,6 +23,28 @@ import { shortAddress } from "../../../lib/utils/solana/parse";
 import { useAccountStore } from "../../../store";
 import { AccountBookService } from "../../../lib/core/walletService/accountBook.service";
 
+// TODO: make this check logic better.. real check that if destination doesn't have a ata.
+function canProceedWithAtaCreation(simulation: SimulatedTransactionResponse | null) {
+  if (!simulation) return false;
+
+  const errText = simulation.err ? JSON.stringify(simulation.err) : "";
+  const logsText = simulation.logs?.join(" ") ?? "";
+  const combined = `${errText} ${logsText}`.toLowerCase();
+
+  const mentionsAta =
+    combined.includes("associated token account") ||
+    combined.includes(" ata ") ||
+    combined.includes("ata for");
+  const mentionsMissing =
+    combined.includes("not present") ||
+    combined.includes("does not have") ||
+    combined.includes("missing") ||
+    combined.includes("not found") ||
+    combined.includes("invalid account data");
+
+  return mentionsAta && mentionsMissing;
+}
+
 export default function ConfirmSendSplToken({
   amount,
   toAddress,
@@ -63,7 +85,7 @@ export default function ConfirmSendSplToken({
           password,
         });
         setSimulationResult(response);
-        setCanSend(!response?.err);
+        setCanSend(!response?.err || canProceedWithAtaCreation(response));
       } catch (error) {
         console.error("Simulation error:", error);
         setCanSend(true);
@@ -188,6 +210,7 @@ export default function ConfirmSendSplToken({
   // ── Main confirm view ──────────────────────────────────────────────────────
   const simErr = simulationResult?.err ?? null;
   const unitsConsumed = simulationResult?.unitsConsumed;
+  const canProceedWithMissingAta = canProceedWithAtaCreation(simulationResult);
   const estimatedFee = lamportsToSol(5000);
 
   return (
@@ -209,6 +232,16 @@ export default function ConfirmSendSplToken({
         {simulationResult && (
           <div className="flex items-center justify-between gap-2">
             <StatusBadge err={simErr} />
+          </div>
+        )}
+
+        {canProceedWithMissingAta && (
+          <div className="flex items-start gap-2 rounded-xl bg-yellow-500/[0.07] border border-yellow-500/20 px-3 py-2.5">
+            <WarningCircleIcon size={14} className="text-yellow-400 shrink-0 mt-0.5" />
+            <p className="text-xs text-yellow-300/80 leading-5">
+              Destination {shortAddress(toAddress)} does not have an ATA for {tokenSymbol || "this token"}. The ATA
+              will be created and you will pay the account creation fee. Confirm to continue.
+            </p>
           </div>
         )}
 
