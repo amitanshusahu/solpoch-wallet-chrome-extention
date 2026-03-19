@@ -76,7 +76,7 @@ function App() {
           <div className="flex flex-col items-center justify-center">
             <div className="mt-6 flex flex-col items-center justify-center">
               <h3 className="text-xs text-gray-300 mb-2">Total Balance</h3>
-              <h1 className="text-5xl font-semibold">{balanceQuery.data ? (lamportsToSol(balanceQuery.data)) : "0.00"} SOL</h1>
+              <h1 className="text-5xl font-semibold text-center">{balanceQuery.data ? (lamportsToSol(balanceQuery.data)) : "0.00"} SOL</h1>
               <p className="text-sm text-emerald-500 mt-2">+2.5% from last week</p>
             </div>
 

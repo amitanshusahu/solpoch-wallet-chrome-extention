@@ -17,50 +17,6 @@ export default function TokenInfo() {
   const account = useAccountStore((state) => state.account);
   const navigate = useNavigate();
 
-  // const [ATAInfo, ATAAccountInfo] = useState<{
-  //   mint: any;
-  //   balance: any;
-  //   decimals: any;
-  //   tokenAccount: string;
-  // } | null>(null);
-  // const [mintInfo, setMintInfo] = useState<{
-  //   mintAddress: string;
-  //   name: string | null;
-  //   symbol: string | null;
-  //   uri: string | null;
-  //   image: any;
-  //   description: any;
-  //   decimals: number;
-  //   supply: string;
-  //   mintAuthority: string | null;
-  //   freezeAuthority: string | null;
-  //   metadata: any;
-  // } | null>(null);
-
-  // useEffect(() => {
-  //   async function fetchATA() {
-  //     if (!account || !mintAddressBase58) return;
-  //     const ata = await RpcService.getAssociatedTokenAccountInfo(account.pubkey, mintAddressBase58);
-  //     ATAAccountInfo(ata);
-  //   }
-
-  //   if (!ATAInfo) {
-  //     fetchATA();
-  //   }
-  // }, [account, mintAddressBase58]);
-
-  // useEffect(() => {
-  //   async function fetchMintInfo() {
-  //     if (!mintAddressBase58) return;
-  //     const mintInfo = await RpcService.getMintTokenInfo(mintAddressBase58);
-  //     setMintInfo(mintInfo);
-  //   }
-
-  //   if (!mintInfo) {
-  //     fetchMintInfo();
-  //   }
-  // }, [mintAddressBase58]);
-
   const ataInfoQuery = useQuery({
     queryKey: ["ataInfo", account?.pubkey.toString(), mintAddressBase58],
     queryFn: async () => {
@@ -96,7 +52,7 @@ export default function TokenInfo() {
           <div className="flex flex-col items-center justify-center">
             <div className="mt-6 flex flex-col items-center justify-center">
               <h3 className="text-xs text-gray-300 mb-2">Total Balance</h3>
-              <h1 className="text-5xl font-semibold">{ataInfoQuery.data ? ataInfoQuery.data.balance : "0.00"} {mintInfoQuery.data && mintInfoQuery.data.symbol ? mintInfoQuery.data.symbol : "N/A"}</h1>
+              <h1 className="text-5xl font-semibold text-center">{ataInfoQuery.data ? ataInfoQuery.data.balance : "0.00"} {mintInfoQuery.data && mintInfoQuery.data.symbol ? mintInfoQuery.data.symbol : "N/A"}</h1>
               <p className="text-sm text-gray-400 mt-2">{mintInfoQuery.data && mintInfoQuery.data.name ? mintInfoQuery.data.name : "Unknown Token"}</p>
             </div>
 

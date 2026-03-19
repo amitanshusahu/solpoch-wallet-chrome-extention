@@ -16,8 +16,7 @@ export default function TokenList() {
       const tokens = await RpcService.getTokenList(account.pubkey);
       console.log("Fetched tokens:", tokens);
       return tokens;
-    },
-    staleTime: 10 * 60 * 1000, // 5 minutes
+    }
   })
 
   if (tokensQuery.isLoading) {
