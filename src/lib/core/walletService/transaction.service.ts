@@ -1,10 +1,10 @@
-import { PublicKey, SystemProgram, Transaction, type SimulateTransactionConfig } from "@solana/web3.js"
+import { PublicKey, SystemProgram, Transaction, type Commitment, type SimulateTransactionConfig } from "@solana/web3.js"
 import { vaultService } from "../vault/service"
 import type { MessageResponse } from "../../../types/message"
 import { RpcService } from "../../rpc"
 import bs58 from "bs58";
 import { chains, features } from "../../utils/solana/walletFeatures";
-import { createTransferInstruction, getAssociatedTokenAddressSync, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, createAssociatedTokenAccountInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddressSync, TOKEN_PROGRAM_ID, TokenAccountNotFoundError, TokenInvalidAccountOwnerError, TokenInvalidMintError, TokenInvalidOwnerError, type Account } from "@solana/spl-token";
 
 export abstract class TransactionService {
 
@@ -274,11 +274,21 @@ export abstract class TransactionService {
   ) {
     try {
       const activeAccount = await vaultService.getActiveAccount();
-      const myTokenAccount = await vaultService.getOrCreateAssociatedTokenAccounts(activeAccount.pubkey, mint, password);
-      const destinationTokenAccount = await vaultService.getOrCreateAssociatedTokenAccounts(destination, mint, password);
+      const myTokenAccount = await this.getOrCreateAssociatedTokenAccount(
+        new PublicKey(activeAccount.pubkey), // payer, in ata creation if not exists
+        new PublicKey(mint),
+        new PublicKey(activeAccount.pubkey), // owner
+        password
+      );
+      const destinationTokenAccount = await this.getOrCreateAssociatedTokenAccount(
+        new PublicKey(activeAccount.pubkey), // payer, in ata creation if not exists - we can use anyone as payer, using active account for simplicity
+        new PublicKey(mint),
+        new PublicKey(destination), // owner
+        password
+      );
 
-      const source = new PublicKey(myTokenAccount);
-      const dest = new PublicKey(destinationTokenAccount);
+      const source = myTokenAccount.address;
+      const dest = destinationTokenAccount.address;
       const ownerPublicKey = new PublicKey(activeAccount.pubkey);
       const programId = TOKEN_PROGRAM_ID;
       const { blockhash, lastValidBlockHeight } = await RpcService.getLatestBlockhash()
@@ -313,6 +323,63 @@ export abstract class TransactionService {
       console.error("Transfer tokens failed:", error);
       throw new Error(`Transfer tokens failed: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  static async getOrCreateAssociatedTokenAccount(payer: PublicKey, mint: PublicKey, owner: PublicKey, password: string, commitment?: Commitment): Promise<Account> {
+    const programId = TOKEN_PROGRAM_ID;
+    const associatedTokenProgramId = ASSOCIATED_TOKEN_PROGRAM_ID;
+    const allowOwnerOffCurve = false;
+    const connection = RpcService.getConnection();
+    const associatedToken = getAssociatedTokenAddressSync(
+      mint,
+      owner,
+      allowOwnerOffCurve,
+      programId,
+      associatedTokenProgramId,
+    );
+
+    let account: Account;
+    try {
+      account = await getAccount(connection, associatedToken, commitment, programId);
+    } catch (error: unknown) {
+      if (error instanceof TokenAccountNotFoundError || error instanceof TokenInvalidAccountOwnerError) {
+        try {
+          const transaction = new Transaction().add(
+            createAssociatedTokenAccountInstruction(
+              payer,
+              associatedToken,
+              owner,
+              mint,
+              programId,
+              associatedTokenProgramId,
+            ),
+          );
+
+          const { blockhash, lastValidBlockHeight } = await RpcService.getLatestBlockhash()
+          transaction.recentBlockhash = blockhash
+          transaction.feePayer = new PublicKey(payer)
+
+          const signedTx = await this.signTransaction(transaction, password)
+          const signature = await RpcService.sendRawTransaction(signedTx)
+
+          await this.pollForConfirmation(
+            signature,
+            lastValidBlockHeight
+          )
+        } catch (error: unknown) {
+          console.error("Failed to create associated token account:", error);
+        }
+
+        account = await getAccount(connection, associatedToken, commitment, programId);
+      } else {
+        throw error;
+      }
+    }
+
+    if (!account.mint.equals(mint)) throw new TokenInvalidMintError();
+    if (!account.owner.equals(owner)) throw new TokenInvalidOwnerError();
+
+    return account;
   }
 
 }
