@@ -46,13 +46,13 @@ function App() {
     }
   })
 
-  const cleanWallet = async () => {
-    await sendMessage("VAULT_CLEAR", undefined);
-  }
+  // const cleanWallet = async () => {
+  //   await sendMessage("VAULT_CLEAR", undefined);
+  // }
 
-  if (status === "LOCKED") {
-    return <Unlock setStatus={setStatus} />;
-  }
+  // if (status === "LOCKED") {
+  //   return <Unlock setStatus={setStatus} />;
+  // }
 
   return (
     <SafeArea>
@@ -67,7 +67,7 @@ function App() {
               >
                 <UserCirclePlusIcon size={24} className="text-gray-300" weight="fill" />
               </button>
-              <button className="p-1.5 rounded-full bg-white/5">
+              <button className="p-1.5 rounded-full bg-white/5" onClick={() => navigate("/settings")}>
                 <GearIcon size={24} className="text-gray-300" weight="fill" />
               </button>
             </div>
@@ -77,7 +77,7 @@ function App() {
             <div className="mt-6 flex flex-col items-center justify-center">
               <h3 className="text-xs text-gray-300 mb-2">Total Balance</h3>
               <h1 className="text-5xl font-semibold text-center">{balanceQuery.data ? (lamportsToSol(balanceQuery.data)) : "0.00"} SOL</h1>
-              <p className="text-sm text-emerald-500 mt-2">+2.5% from last week</p>
+              <p className="text-sm text-emerald-500 mt-2">Solana Devnet</p>
             </div>
 
             <div className="mt-6 flex gap-4 flex-wrap">
@@ -102,6 +102,7 @@ function App() {
               <div className="flex flex-col justify-center items-center">
                 <button
                   className="flex bg-white/20 text-sm rounded-full justify-center items-center w-16 h-16 inset-top-light"
+                  onClick={() => navigate("/swap")}
                 >
                   <ArrowsLeftRightIcon size={24} weight="bold" className="mr-1" />
                 </button>
@@ -110,7 +111,7 @@ function App() {
               <div className="flex flex-col justify-center items-center">
                 <button
                   className="flex bg-white/20 text-sm rounded-full justify-center items-center w-16 h-16 inset-top-light"
-                  onClick={cleanWallet}
+                  onClick={() => navigate("/more")}
                 >
                   <DotsThreeIcon size={24} weight="bold" className="mr-1" />
                 </button>
