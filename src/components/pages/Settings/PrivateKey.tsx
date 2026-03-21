@@ -6,6 +6,7 @@ import BackButton from "../../ui/util/BackButton";
 import { StarFourIcon } from "@phosphor-icons/react/dist/ssr";
 import { useState } from "react";
 import ConfirmWithPassword from "../../ui/util/ConfirmWithPassword";
+import { sendMessage } from "../../../lib/utils/chrome/message";
 
 export default function PrivateKey() {
 
@@ -18,8 +19,12 @@ export default function PrivateKey() {
 
 
   const handleCopyKey = async () => {
+    if (!account) return;
     setCopying(true);
-    const privateKey = "kdlfkd"
+    const privateKey = await sendMessage("GET_PRIVATE_KEY", {
+      index: account.index,
+      password,
+    });
     await navigator.clipboard.writeText(privateKey);
     setCopying(false);
     setIsKeyCopied(true);

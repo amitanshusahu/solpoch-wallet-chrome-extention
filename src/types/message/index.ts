@@ -1,6 +1,6 @@
 import type { SimulatedTransactionResponse } from "@solana/web3.js";
 import type { Account } from "../vault";
-import type { AddAccountRequest, ApprovalResponseRequest, ConnectWalletRequest, GetApprovalsFromManagerRequest, PopupSignAndSendTransactionRequest, PopupSignInRequest, PopupSignMessageRequest, PopupSignTransactionRequest, PopupSignTransactionsRequest, SendTokenTransactionRequest, SendTransactionRequest, SimulateUsingTransactionRequest, SimulateUsingTransactionsRequest, UnlockPopupResponseRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
+import type { AddAccountRequest, ApprovalResponseRequest, ConnectWalletRequest, GetApprovalsFromManagerRequest, GetPrivateKeyRequest, PopupSignAndSendTransactionRequest, PopupSignInRequest, PopupSignMessageRequest, PopupSignTransactionRequest, PopupSignTransactionsRequest, SendTokenTransactionRequest, SendTransactionRequest, SimulateUsingTransactionRequest, SimulateUsingTransactionsRequest, UnlockPopupResponseRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
 import type { ApprovalManagerResponse, ApprovalPayload, ApprovalRequest } from "../../scripts/background/ApprovalManager";
 import type { chains, features } from "../../lib/utils/solana/walletFeatures";
 
@@ -196,6 +196,11 @@ export type MessageMap = {
   SIMULATE_TOKEN_TRANSACTION: {
     req: SendTokenTransactionRequest;
     res: SimulatedTransactionResponse;
+  }
+
+  GET_PRIVATE_KEY: {
+    req: GetPrivateKeyRequest;
+    res: string; // private key in base58
   }
 
 } & ApprovalResolveMap;

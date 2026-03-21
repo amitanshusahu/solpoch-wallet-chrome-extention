@@ -167,3 +167,9 @@ export const SendTokenTransactionRequestSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters long"),
 });
 export type SendTokenTransactionRequest = z.infer<typeof SendTokenTransactionRequestSchema>;
+
+export const getPrivateKeyRequestSchema = z.object({
+  index: z.number().min(0, "Account index must be a non-negative integer"),
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+});
+export type GetPrivateKeyRequest = z.infer<typeof getPrivateKeyRequestSchema>;

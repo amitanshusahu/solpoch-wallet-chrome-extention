@@ -139,20 +139,19 @@ export class Vault {
     return { signature };
   }
 
-  // async getOrCreateAssociatedTokenAccounts(owner: string, mintAddress: string, password: string): Promise<string> {
-  //   const connection = RpcService.getConnection();
-  //   const activeAccount = await this.getActiveAccount();
-  //   const payer = keypairFromMnemonic(await this.decryptMnemonicFromPassword(password), activeAccount.index)
+  async getPrivateKey(index: number, password: string): Promise<string> {
+    const isUnlocked = await this.getIsUnlocked();
+    if (!isUnlocked) {
+      throw new Error("Vault locked")
+    }
+    const vaultData = await this.getVaultData();
+    if (index < 0 || index >= vaultData.accounts.length) {
+      throw new Error("Invalid account index");
+    }
+    const privateKey = keypairFromMnemonic(await this.decryptMnemonicFromPassword(password), index).secretKey;
+    return Buffer.from(privateKey).toString('base64');
 
-  //   // TODO: get or create - "create" uses window object and is not working in background service worker, so we have to do it ourselves here.
-  //   const tokenAccounts = await getOrCreateAssociatedTokenAccount(
-  //     connection,
-  //     payer,
-  //     new PublicKey(mintAddress),
-  //     new PublicKey(owner)
-  //   );
-
-  //   return tokenAccounts.address.toBase58();
-  // }
+    // string to unit8array: Uint8Array.from(Buffer.from(privateKey, 'base64'))
+  }
 
 }

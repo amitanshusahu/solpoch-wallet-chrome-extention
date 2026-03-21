@@ -23,7 +23,8 @@ import {
   PopupSignInSchema,
   AddAccount,
   SetActiveAccountRequestSchema,
-  SendTokenTransactionRequestSchema
+  SendTokenTransactionRequestSchema,
+  getPrivateKeyRequestSchema
 } from "../../types/message/zod";
 import { ApprovalManager, type ApprovalManagerResponse } from "./ApprovalManager";
 
@@ -287,6 +288,16 @@ chrome.runtime.onMessage.addListener(
               success: response.success,
               data: response.data,
               error: response?.error,
+            });
+            break;
+          }
+
+          case "GET_PRIVATE_KEY": {
+            const payload = getPrivateKeyRequestSchema.parse(message.payload);
+            const response = await vaultService.getPrivateKey(payload.index, payload.password);
+            sendResponse({
+              success: true,
+              data: response,
             });
             break;
           }
