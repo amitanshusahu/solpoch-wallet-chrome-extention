@@ -1,6 +1,7 @@
 import App from "./App";
 import Accounts from "./components/pages/Accounts";
 import ConnectApprove from "./components/pages/ConnectApprove";
+import ErrorPage from "./components/pages/ErrorPage";
 import More from "./components/pages/More";
 import Onboarding from "./components/pages/Onboarding";
 import Recieve from "./components/pages/Recieve";
@@ -20,7 +21,7 @@ import UnlockPopup from "./components/pages/UnlockPopup";
 export const routes = [
   {
     path: '*',
-    element: <div>Not Found</div>
+    element: <div>Not Found</div>,
   },
   {
     path: '/',
@@ -88,7 +89,8 @@ export const routes = [
   },
   {
     path: '/transaction-history',
-    element: <TransactionHistory />
+    element: <TransactionHistory />,
+    errorElement: <ErrorPage />
   },
   {
     path: '/settings',

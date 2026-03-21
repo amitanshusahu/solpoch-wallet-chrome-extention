@@ -87,84 +87,84 @@ export class RpcService {
     };
   }
 
-static async getMintTokenInfo(mintAddress: string) {
-  const connection = this.getConnection();
-  const mintPubkey = new PublicKey(mintAddress);
+  static async getMintTokenInfo(mintAddress: string) {
+    const connection = this.getConnection();
+    const mintPubkey = new PublicKey(mintAddress);
 
-  try {
-    // fetch mint info
-    const mintInfo = await getMint(connection, mintPubkey);
+    try {
+      // fetch mint info
+      const mintInfo = await getMint(connection, mintPubkey);
 
-    const decimals = mintInfo.decimals;
-    const supply = mintInfo.supply;
-    const mintAuthority = mintInfo.mintAuthority?.toBase58() || null;
-    const freezeAuthority = mintInfo.freezeAuthority?.toBase58() || null;
+      const decimals = mintInfo.decimals;
+      const supply = mintInfo.supply;
+      const mintAuthority = mintInfo.mintAuthority?.toBase58() || null;
+      const freezeAuthority = mintInfo.freezeAuthority?.toBase58() || null;
 
-    // derive metadata PDA
-    const [metadataPDA] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("metadata"),
-        TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-        mintPubkey.toBuffer(),
-      ],
-      TOKEN_METADATA_PROGRAM_ID
-    );
+      // derive metadata PDA
+      const [metadataPDA] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from("metadata"),
+          TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+          mintPubkey.toBuffer(),
+        ],
+        TOKEN_METADATA_PROGRAM_ID
+      );
 
-    const accountInfo = await connection.getAccountInfo(metadataPDA);
+      const accountInfo = await connection.getAccountInfo(metadataPDA);
 
-    let name = null;
-    let symbol = null;
-    let uri = null;
-    let json: any = null;
+      let name = null;
+      let symbol = null;
+      let uri = null;
+      let json: any = null;
 
-    if (accountInfo) {
-      const rpcAccount = {
-        executable: accountInfo.executable,
-        owner: PublicKeyMeta(accountInfo.owner.toBase58()),
-        lamports: {
-          basisPoints: BigInt(accountInfo.lamports),
-          identifier: "SOL" as const,
-          decimals: 9 as const,
-        },
-        data: new Uint8Array(accountInfo.data),
-        publicKey: PublicKeyMeta(metadataPDA.toBase58()),
+      if (accountInfo) {
+        const rpcAccount = {
+          executable: accountInfo.executable,
+          owner: PublicKeyMeta(accountInfo.owner.toBase58()),
+          lamports: {
+            basisPoints: BigInt(accountInfo.lamports),
+            identifier: "SOL" as const,
+            decimals: 9 as const,
+          },
+          data: new Uint8Array(accountInfo.data),
+          publicKey: PublicKeyMeta(metadataPDA.toBase58()),
+        };
+
+        const metadata = deserializeMetadata(rpcAccount);
+
+        name = metadata.name.replace(/\0/g, "");
+        symbol = metadata.symbol.replace(/\0/g, "");
+        uri = metadata.uri.replace(/\0/g, "");
+
+        try {
+          const res = await fetch(uri);
+          json = await res.json();
+        } catch { }
+      }
+
+      return {
+        mintAddress,
+        name,
+        symbol,
+        uri,
+
+        image: json?.image || null,
+        description: json?.description || null,
+
+        decimals,
+        supply: supply.toString(),
+
+        mintAuthority,
+        freezeAuthority,
+
+        metadata: json
       };
 
-      const metadata = deserializeMetadata(rpcAccount);
-
-      name = metadata.name.replace(/\0/g, "");
-      symbol = metadata.symbol.replace(/\0/g, "");
-      uri = metadata.uri.replace(/\0/g, "");
-
-      try {
-        const res = await fetch(uri);
-        json = await res.json();
-      } catch {}
+    } catch (err) {
+      console.error("Token fetch failed:", err);
+      return null;
     }
-
-    return {
-      mintAddress,
-      name,
-      symbol,
-      uri,
-
-      image: json?.image || null,
-      description: json?.description || null,
-
-      decimals,
-      supply: supply.toString(),
-
-      mintAuthority,
-      freezeAuthority,
-
-      metadata: json
-    };
-
-  } catch (err) {
-    console.error("Token fetch failed:", err);
-    return null;
   }
-}
 
   static async getTokenList(publicKey: string) {
     const connection = this.getConnection();
@@ -251,5 +251,25 @@ static async getMintTokenInfo(mintAddress: string) {
 
     return result;
   }
+
+  static async getTransactionsForAddress(address: string) {
+    const connection = this.getConnection();
+    const confirmedSignatures = await connection.getSignaturesForAddress(new PublicKey(address));
+    const signatures = confirmedSignatures.map((sig) => sig.signature).slice(0, 5); // limit to 5 transactions for now
+    const transactions = [];
+
+    for (let i = 0; i < signatures.length; i++) {
+      const tx = await connection.getTransaction(signatures[i]);
+      transactions.push(tx);
+
+      // Throttle follow-up RPC requests when fetching multiple signatures.
+      if (signatures.length > 1 && i < signatures.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+
+    console.log({ transactions });
+    return transactions;
+  };
 
 }

@@ -50,9 +50,9 @@ function App() {
   //   await sendMessage("VAULT_CLEAR", undefined);
   // }
 
-  // if (status === "LOCKED") {
-  //   return <Unlock setStatus={setStatus} />;
-  // }
+  if (status === "LOCKED") {
+    return <Unlock setStatus={setStatus} />;
+  }
 
   return (
     <SafeArea>
