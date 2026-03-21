@@ -21,7 +21,7 @@ import UnlockPopup from "./components/pages/UnlockPopup";
 export const routes = [
   {
     path: '*',
-    element: <div>Not Found</div>,
+    element: <ErrorPage />,
   },
   {
     path: '/',
