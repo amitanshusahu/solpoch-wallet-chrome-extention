@@ -1,6 +1,6 @@
 import type { SimulatedTransactionResponse } from "@solana/web3.js";
 import type { Account } from "../vault";
-import type { AddAccountRequest, ApprovalResponseRequest, ConnectWalletRequest, GetApprovalsFromManagerRequest, GetPrivateKeyRequest, PopupSignAndSendTransactionRequest, PopupSignInRequest, PopupSignMessageRequest, PopupSignTransactionRequest, PopupSignTransactionsRequest, SendTokenTransactionRequest, SendTransactionRequest, SimulateUsingTransactionRequest, SimulateUsingTransactionsRequest, UnlockPopupResponseRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
+import type { AddAccountRequest, ApprovalResponseRequest, ConnectWalletRequest, GetApprovalsFromManagerRequest, GetMnemonicRequest, GetPrivateKeyRequest, PopupSignAndSendTransactionRequest, PopupSignInRequest, PopupSignMessageRequest, PopupSignTransactionRequest, PopupSignTransactionsRequest, SendTokenTransactionRequest, SendTransactionRequest, SimulateUsingTransactionRequest, SimulateUsingTransactionsRequest, UnlockPopupResponseRequest, VaultCreateRequest, VaultUnlockRequest } from "./zod";
 import type { ApprovalManagerResponse, ApprovalPayload, ApprovalRequest } from "../../scripts/background/ApprovalManager";
 import type { chains, features } from "../../lib/utils/solana/walletFeatures";
 
@@ -201,6 +201,11 @@ export type MessageMap = {
   GET_PRIVATE_KEY: {
     req: GetPrivateKeyRequest;
     res: string; // private key in base58
+  }
+
+  GET_MNEMONIC: {
+    req: GetMnemonicRequest;
+    res: string; // mnemonic
   }
 
 } & ApprovalResolveMap;

@@ -9,6 +9,7 @@ import Send from "./components/pages/Send";
 import SendSplTokens from "./components/pages/SendSPLtokens";
 import PrivateKey from "./components/pages/Settings/PrivateKey";
 import Settings from "./components/pages/Settings/Settings";
+import ViewMnemonic from "./components/pages/Settings/ViewMnemonics";
 import SignAllTransactionsApproval from "./components/pages/SignAllTransactionsApproval";
 import SignAndSendTransactionApproval from "./components/pages/SignAndSendTransactionApproval";
 import SignInApproval from "./components/pages/SignIn";
@@ -100,5 +101,9 @@ export const routes = [
   {
     path: '/view-private-key',
     element: <PrivateKey />
+  },
+  {
+    path: '/view-mnemonics',
+    element: <ViewMnemonic />
   }
 ]

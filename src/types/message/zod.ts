@@ -173,3 +173,8 @@ export const getPrivateKeyRequestSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters long"),
 });
 export type GetPrivateKeyRequest = z.infer<typeof getPrivateKeyRequestSchema>;
+
+export const getMnemonicRequestSchema = z.object({
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+});
+export type GetMnemonicRequest = z.infer<typeof getMnemonicRequestSchema>;

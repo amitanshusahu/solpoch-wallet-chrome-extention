@@ -24,7 +24,8 @@ import {
   AddAccount,
   SetActiveAccountRequestSchema,
   SendTokenTransactionRequestSchema,
-  getPrivateKeyRequestSchema
+  getPrivateKeyRequestSchema,
+  getMnemonicRequestSchema
 } from "../../types/message/zod";
 import { ApprovalManager, type ApprovalManagerResponse } from "./ApprovalManager";
 
@@ -295,6 +296,16 @@ chrome.runtime.onMessage.addListener(
           case "GET_PRIVATE_KEY": {
             const payload = getPrivateKeyRequestSchema.parse(message.payload);
             const response = await vaultService.getPrivateKey(payload.index, payload.password);
+            sendResponse({
+              success: true,
+              data: response,
+            });
+            break;
+          }
+
+          case "GET_MNEMONIC": {
+            const payload = getMnemonicRequestSchema.parse(message.payload);
+            const response = await vaultService.getMnemonic(payload.password);
             sendResponse({
               success: true,
               data: response,

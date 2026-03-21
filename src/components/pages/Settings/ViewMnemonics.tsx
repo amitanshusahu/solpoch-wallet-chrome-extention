@@ -8,7 +8,7 @@ import { useState } from "react";
 import ConfirmWithPassword from "../../ui/util/ConfirmWithPassword";
 import { sendMessage } from "../../../lib/utils/chrome/message";
 
-export default function PrivateKey() {
+export default function ViewMnemonic() {
 
   const account = useAccountStore((state) => state.account);
   const [isKeyCopied, setIsKeyCopied] = useState(false);
@@ -19,13 +19,11 @@ export default function PrivateKey() {
 
 
   const handleCopyKey = async () => {
-    if (!account) return;
     setCopying(true);
-    const privateKey = await sendMessage("GET_PRIVATE_KEY", {
-      index: account.index,
+    const mnemonics = await sendMessage("GET_MNEMONIC", {
       password,
     });
-    await navigator.clipboard.writeText(privateKey);
+    await navigator.clipboard.writeText(mnemonics);
     setCopying(false);
     setIsKeyCopied(true);
     setTimeout(() => setIsKeyCopied(false), 2000);
@@ -60,31 +58,27 @@ export default function PrivateKey() {
 
         <div className="mt-4 rounded-lg border border-amber-400/30 bg-amber-500/10 p-4">
           <div className="flex items-start gap-2">
-            <ShieldWarningIcon size={14} weight="fill" className="text-amber-300 mt-0.5" />
+            <div>
+              <ShieldWarningIcon size={14} weight="fill" className="text-amber-300 mt-0.5" />
+            </div>
             <div>
               <p className="text-sm text-amber-200 font-medium">Security Warning</p>
               <p className="mt-1 text-xs text-amber-100/90 leading-relaxed">
-                Your private key gives full control of this account.
-                {" "}
-                <span className="font-medium">
-                  A{account?.index} ({account?.pubkey.slice(0, 4)}...{account?.pubkey.slice(-4)})
-                </span>
-                . Never share it or paste it into websites.
+                Your recovery phrase gives full control of this wallet. Never share it, never
+                paste it into websites, and only copy it when absolutely necessary.
               </p>
             </div>
           </div>
         </div>
 
-        <h4 className="text-xs text-gray-400 mt-6 uppercase tracking-wide">
-          Private Key for Account A{account?.index}
-        </h4>
+        <h4 className="text-xs text-gray-400 mt-6 uppercase tracking-wide">Your Mnemonic</h4>
         <div className="mt-2 rounded-lg border border-white/10 bg-white/5 p-3">
-          <div className="flex flex-wrap gap-1.5 font-mono text-sm text-gray-300 justify-center items-center">
+          <div className="flex flex-wrap gap-1.5 font-mono text-sm text-gray-300 items-center justify-center">
             {
               `************************`.split("").map((_, index) => (
                 <span
                   key={index}
-                  className="inline-flex h-5 w-5 items-center justify-center rounded "
+                  className="inline-flex h-5 w-5 items-center justify-center rounded"
                 >
                   <StarFourIcon size={10} weight="fill" className="text-gray-400" />
                 </span>
@@ -98,7 +92,7 @@ export default function PrivateKey() {
             disabled={coping}
           >
             <CopyIcon size={14} />
-            <span>{coping ? "Copying private key..." : isKeyCopied ? "Private key copied" : "Copy Private Key"}</span>
+            <span>{coping ? "Copying mnemonic..." : isKeyCopied ? "Mnemonic copied" : "Copy Mnemonic"}</span>
           </button>
 
           <p className="mt-4 text-xs text-gray-400 text-center">

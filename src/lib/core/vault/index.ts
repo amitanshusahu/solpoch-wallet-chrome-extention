@@ -154,4 +154,13 @@ export class Vault {
     // string to unit8array: Uint8Array.from(Buffer.from(privateKey, 'base64'))
   }
 
+  async getMnemonic(password: string): Promise<string> {
+    const isUnlocked = await this.getIsUnlocked();
+    if (!isUnlocked) {
+      throw new Error("Vault locked")
+    }
+    const mnemonic = await this.decryptMnemonicFromPassword(password);
+    return mnemonic;
+  }
+
 }
