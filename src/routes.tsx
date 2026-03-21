@@ -7,7 +7,8 @@ import Onboarding from "./components/pages/Onboarding";
 import Recieve from "./components/pages/Recieve";
 import Send from "./components/pages/Send";
 import SendSplTokens from "./components/pages/SendSPLtokens";
-import Settings from "./components/pages/Settings";
+import PrivateKey from "./components/pages/Settings/PrivateKey";
+import Settings from "./components/pages/Settings/Settings";
 import SignAllTransactionsApproval from "./components/pages/SignAllTransactionsApproval";
 import SignAndSendTransactionApproval from "./components/pages/SignAndSendTransactionApproval";
 import SignInApproval from "./components/pages/SignIn";
@@ -95,5 +96,9 @@ export const routes = [
   {
     path: '/settings',
     element: <Settings />
+  },
+  {
+    path: '/view-private-key',
+    element: <PrivateKey />
   }
 ]

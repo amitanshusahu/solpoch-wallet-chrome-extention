@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { useAccountStore } from "../../store";
-import ProfileAvatar from "../ui/home/ProfileAvatar";
-import SafeArea from "../ui/layout/SafeArea";
-import BackButton from "../ui/util/BackButton";
-import OptionButtons from "../ui/util/OptionButtons";
+import { useAccountStore } from "../../../store";
+import ProfileAvatar from "../../ui/home/ProfileAvatar";
+import SafeArea from "../../ui/layout/SafeArea";
+import BackButton from "../../ui/util/BackButton";
+import OptionButtons from "../../ui/util/OptionButtons";
 import { ShieldCheckIcon, TrashIcon, UsersThreeIcon, WifiHighIcon } from "@phosphor-icons/react";
 import { ShieldWarningIcon } from "@phosphor-icons/react/dist/ssr";
 
