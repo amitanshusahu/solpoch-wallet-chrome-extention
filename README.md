@@ -1,6 +1,7 @@
 <h1 align = "center"> 
+    
+<img width="500" height="250" alt="logo" src="https://github.com/user-attachments/assets/011f7100-528b-4fab-81b7-dd2038b74ea8" />
 
-<!-- ![qute-tube-logo-ghb-removebg-preview](https://github.com/amitanshusahu/YouTube-fullstack/assets/83657737/6e80619d-998c-42e6-aa76-089bc75ec9a1) -->
 
 </h1>
 
