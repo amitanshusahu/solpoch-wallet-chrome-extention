@@ -1,6 +1,6 @@
 <h1 align="center"> 
     
-<img width="500" height="250" alt="logo" src="https://github.com/user-attachments/assets/011f7100-528b-4fab-81b7-dd2038b74ea8" />
+<img width="300" height="150" alt="logo" src="https://github.com/user-attachments/assets/6b70d1c4-2260-48b7-829f-4f69751cca57" />
 
 Developer Wallet for Solana
 
@@ -15,6 +15,9 @@ Stop guessing what your dApp is doing — see it.
 <a href="https://solpoch-landing-page.vercel.app/">🌐 Website</a> • 
 <a href="https://github.com/amitanshusahu/solpoch-wallet-chrome-extention/releases">⬇️ Download Alpha</a>
 </p>
+
+<img width="1419" height="1100" alt="product" src="https://github.com/user-attachments/assets/7644edd3-780d-432d-b150-5708a644b65a" />
+
 
 ---
 
