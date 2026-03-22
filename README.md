@@ -2,8 +2,6 @@
     
 <img width="500" height="250" alt="logo" src="https://github.com/user-attachments/assets/011f7100-528b-4fab-81b7-dd2038b74ea8" />
 
-Solpoch
-
 Developer Wallet for Solana
 
 </h1>
@@ -124,21 +122,17 @@ These features define where Solpoch is going:
 - Inspect params, responses, latency
 - Like "Network Tab" for Solana
 
----
-
 ### 🔁 Transaction Replay
 - Replay past transactions
 - Modify parameters and re-run
 - Debug edge cases easily
 
----
 
 ### 🧱 Instruction Playground
 - Manually construct transactions
 - Simulate and send
 - Generate code instantly
 
----
 
 ### 📋 Code View (Huge Feature)
 Toggle to see:
