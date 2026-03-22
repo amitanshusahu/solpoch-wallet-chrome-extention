@@ -1,24 +1,169 @@
-<h1 align = "center"> 
+<h1 align="center"> 
     
 <img width="500" height="250" alt="logo" src="https://github.com/user-attachments/assets/011f7100-528b-4fab-81b7-dd2038b74ea8" />
 
+Solpoch
+
+Developer Wallet for Solana
 
 </h1>
 
+<p align="center">
+<b>Debug, Inspect, and Understand Every Solana Transaction.</b> <br/>
+Stop guessing what your dApp is doing — see it.
+</p>
 
-<!-- --- -->
-
-<!-- <div align="center">
-    
-![Blue Modern Benefits of Running Youtube Thumbnail](https://github.com/amitanshusahu/YouTube-fullstack/assets/83657737/8ca90bc6-c4b3-4d53-8f49-fc0b028c34c2)
-
-[🔴 watch demo on youtube](https://youtu.be/4zdD7xFHhM0)
-
-</div> -->
+<p align="center">
+<a href="https://solpoch-landing-page.vercel.app/">🌐 Website</a> • 
+<a href="https://github.com/amitanshusahu/solpoch-wallet-chrome-extention/releases">⬇️ Download Alpha</a>
+</p>
 
 ---
+
+## 🚀 What is Solpoch?
+
+Solpoch is a **developer-first Solana wallet** designed to give you full visibility into what your dApp is doing.
+
+Traditional wallets abstract everything away.  
+Solpoch does the opposite.
+
+It lets you:
+
+- Inspect raw transaction instructions
+- Simulate before sending
+- View program logs
+- Understand RPC calls
+- Debug faster
+
+> Think of it as **DevTools for Solana transactions**, not just a wallet.
+
+---
+
+## ⚡ Why Solpoch?
+
+Building on Solana is powerful — but debugging is painful.
+
+### Problems today:
+- Wallets hide instruction-level details  
+- No visibility into what `sendTransaction` actually does  
+- Debugging failed transactions is slow  
+- Constant context switching (wallet ↔ explorer ↔ code)  
+
+### Solpoch fixes this:
+- Shows parsed + raw instructions  
+- Simulates transactions with logs before sending  
+- Exposes developer-level insights directly in the wallet  
+- Makes debugging fast and intuitive  
+
+---
+
+## 🧠 Core Philosophy
+
+> **Don't hide complexity. Surface it.**
+
+Solpoch is built for:
+- Developers
+- Hackathon builders
+- Protocol engineers
+- Students learning Solana
+
+---
+
+## ✨ Features
+
+### ✅ Wallet Core
+- Wallet Standard compatible (auto-detected by adapters)
+- Connect / Disconnect
+- signMessage / signIn
+- sendTransaction / sendAllTransaction
+- signAndSendTransaction / signAndSendAllTransaction
+
+---
+
+### 🔐 Security
+- Encrypted vault
+- Secure key management
+
+---
+
+### 💸 Transactions
+- Send / Receive SOL & SPL tokens
+- Multi-token support
+- Multi-account manager + account book
+- Auto-connect trusted origins
+
+---
+
+### 🧪 Developer Features (Core Differentiator)
+
+#### 🔍 Transaction Simulation
+- Simulate before sending
+- View program logs
+- Catch failures early
+
+#### 🧾 Instruction Parsing
+- Decode and display instructions in human-readable format
+- Understand what each program is doing
+
+#### 📜 Program Logs
+- See logs emitted by programs during execution
+- Debug contracts easily
+
+#### 🌐 Devnet First
+- Full devnet support
+- Build and test freely without mainnet constraints
+
+---
+
+## 🧭 Coming Soon (Vision)
+
+These features define where Solpoch is going:
+
+### 🔌 RPC Inspector
+- View all RPC calls made by the wallet
+- Inspect params, responses, latency
+- Like "Network Tab" for Solana
+
+---
+
+### 🔁 Transaction Replay
+- Replay past transactions
+- Modify parameters and re-run
+- Debug edge cases easily
+
+---
+
+### 🧱 Instruction Playground
+- Manually construct transactions
+- Simulate and send
+- Generate code instantly
+
+---
+
+### 📋 Code View (Huge Feature)
+Toggle to see:
+
+```js
+window.solana.sendTransaction(...)
+```
+
+### 📡 Curl Generator
+One-click copy for RPC calls
+Pre-filled with your public key and params
+```bash
+curl https://api.devnet.solana.com \
+-X POST \
+-d '{...}'
+```
+
+## 🧠 Future Vision
+Solpoch aims to become:
+The debugging console for Solana developers
+Not just a wallet — but a full developer toolkit.
+
 ## 🛠️ Tech Stack / packages used
-- Vite , react , typescript, tailwind, zod, zustand
+- Bun, Vite 
+- react , typescript, tailwind, zod, zustand
 - @solana/web3.js, @solana/spl-token, bip39
 - vite-plugin-node-polyfills
 
