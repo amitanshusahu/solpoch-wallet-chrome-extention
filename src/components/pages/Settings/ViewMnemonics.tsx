@@ -7,6 +7,7 @@ import { StarFourIcon } from "@phosphor-icons/react/dist/ssr";
 import { useState } from "react";
 import ConfirmWithPassword from "../../ui/util/ConfirmWithPassword";
 import { sendMessage } from "../../../lib/utils/chrome/message";
+import { clearClipboardAfterDelay } from "../../../lib/utils/chrome/alarm";
 
 export default function ViewMnemonic() {
 
@@ -28,10 +29,10 @@ export default function ViewMnemonic() {
     setIsKeyCopied(true);
     setTimeout(() => setIsKeyCopied(false), 2000);
 
+    // TODO: make this do by background script to ensure it works even after window is closed
     // clear the clipboard after 15 sec for security
-    setTimeout(() => {
-      navigator.clipboard.writeText("");
-    }, 15 * 1000);
+    clearClipboardAfterDelay("Mnemonic cleared for security after 15 seconds", 15);
+
   };
 
   if (!confimedWithPassword) {

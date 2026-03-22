@@ -6,10 +6,15 @@ import BackButton from "../../ui/util/BackButton";
 import OptionButtons from "../../ui/util/OptionButtons";
 import { ShieldCheckIcon, TrashIcon, UsersThreeIcon, WifiHighIcon } from "@phosphor-icons/react";
 import { ShieldWarningIcon } from "@phosphor-icons/react/dist/ssr";
+import { sendMessage } from "../../../lib/utils/chrome/message";
 
 export default function Settings() {
   const account = useAccountStore((state) => state.account);
   const navigate = useNavigate();
+
+  const cleanWallet = async () => {
+    await sendMessage("VAULT_CLEAR", undefined);
+  }
 
   return (
     <SafeArea>
@@ -84,7 +89,12 @@ export default function Settings() {
           }
           label="Delete Wallet"
           type="danger"
-          onClick={() => navigate("/delete-wallet")}
+          onClick={() => {
+            const confirmDelete = window.confirm("Are you sure you want to delete the wallet? This action cannot be undone.");
+            if (confirmDelete) {
+              cleanWallet();
+            }
+          }}
         />
 
       </div>

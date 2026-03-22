@@ -10,7 +10,8 @@
     "build:chrome:main": "tsc -b && vite build --config vite.config.chrome.ts ",
     "build:chrome:inject": "tsc -b && vite build --config vite.config.chrome.inject.ts ",
     "build:chrome:content": "tsc -b && vite build --config vite.config.chrome.content.ts ",
-    "build:chrome:background": "tsc -b && vite build --config vite.config.chrome.background.ts "
+    "build:chrome:background": "tsc -b && vite build --config vite.config.chrome.background.ts ",
+    "release": "npm run build && zip -r release/solpoch-chrome-extension.zip dist/*"
   },
   "dependencies": {
     "@metaplex-foundation/mpl-token-metadata": "^3.4.0",

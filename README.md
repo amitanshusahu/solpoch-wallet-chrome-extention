@@ -1,73 +1,46 @@
-# React + TypeScript + Vite
+<h1 align = "center"> 
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<!-- ![qute-tube-logo-ghb-removebg-preview](https://github.com/amitanshusahu/YouTube-fullstack/assets/83657737/6e80619d-998c-42e6-aa76-089bc75ec9a1) -->
 
-Currently, two official plugins are available:
+</h1>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## React Compiler
+<!-- --- -->
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+<!-- <div align="center">
+    
+![Blue Modern Benefits of Running Youtube Thumbnail](https://github.com/amitanshusahu/YouTube-fullstack/assets/83657737/8ca90bc6-c4b3-4d53-8f49-fc0b028c34c2)
 
-## Expanding the ESLint configuration
+[🔴 watch demo on youtube](https://youtu.be/4zdD7xFHhM0)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+</div> -->
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
+## 🛠️ Tech Stack / packages used
+- Vite , react , typescript, tailwind, zod, zustand
+- @solana/web3.js, @solana/spl-token, bip39
+- vite-plugin-node-polyfills
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Releases
+[Release Page](https://github.com/amitanshusahu/solpoch-wallet-chrome-extention/releases)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🛠️ Mannual Build
+```bash
+# clone the repo
+git clone https://github.com/amitanshusahu/solpoch-wallet-chrome-extention & cd solpoch-wallet-chrome-extention
+
+# build the extention
+npm i && npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 📓 References
+- Repos & Docs
+    - [This guide is for wallets that want to implement the Wallet Standard](https://github.com/anza-xyz/wallet-standard/blob/master/WALLET.md)
+    - [Backpack has clean wallet standard and Ui popup manager implementaion](https://github.com/coral-xyz/backpack)
+    - [Cosmostation has clean vite configs for build](https://github.com/cosmostation/cosmostation-chrome-extension)
+- videos
+    - [Building Chrome Extention With Vite](https://youtu.be/iBL-vYXk9sc?si=Og0ZFW_FgdGxhSpf)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+<h1 align="center"> Star the Repo ⭐ </h1>
