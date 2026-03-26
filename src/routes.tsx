@@ -2,7 +2,8 @@ import App from "./App";
 import Accounts from "./components/pages/Accounts";
 import ConnectApprove from "./components/pages/ConnectApprove";
 import ErrorPage from "./components/pages/ErrorPage";
-import More from "./components/pages/More";
+import SolanaRpcHttpMethods from "./components/pages/More/SolanaRpcHttpMethods";
+import More from "./components/pages/More/More";
 import Onboarding from "./components/pages/Onboarding";
 import Recieve from "./components/pages/Recieve";
 import Send from "./components/pages/Send";
@@ -105,5 +106,9 @@ export const routes = [
   {
     path: '/view-mnemonics',
     element: <ViewMnemonic />
+  },
+  {
+    path: '/http-methods',
+    element: <SolanaRpcHttpMethods />
   }
 ]

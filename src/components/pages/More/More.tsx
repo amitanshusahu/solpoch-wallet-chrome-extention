@@ -1,14 +1,18 @@
-import { ClockCounterClockwiseIcon, CodeIcon, UserCirclePlusIcon } from "@phosphor-icons/react";
-import { useAccountStore } from "../../store";
-import ProfileAvatar from "../ui/home/ProfileAvatar";
-import SafeArea from "../ui/layout/SafeArea";
-import BackButton from "../ui/util/BackButton";
-import OptionButtons from "../ui/util/OptionButtons";
+import { ClockCounterClockwiseIcon, CodeIcon, LinkIcon, UserCirclePlusIcon } from "@phosphor-icons/react";
+import { useAccountStore } from "../../../store";
+import ProfileAvatar from "../../ui/home/ProfileAvatar";
+import SafeArea from "../../ui/layout/SafeArea";
+import BackButton from "../../ui/util/BackButton";
+import OptionButtons from "../../ui/util/OptionButtons";
 import { useNavigate } from "react-router-dom";
 
 export default function More() {
   const account = useAccountStore((state) => state.account);
   const navigate = useNavigate();
+  const visitSolanaDocs = () => {
+    const docsUrl = "https://solana.com/docs";
+    window.open(docsUrl, "_blank");
+  }
 
   return (
     <SafeArea>
@@ -52,8 +56,20 @@ export default function More() {
             />
           }
           label="Curl Commands"
-          onClick={() => navigate("/curl-commands")}
+          onClick={() => navigate("/http-methods")}
         />
+        <OptionButtons
+          icon={
+            <LinkIcon
+              size={13}
+              weight="bold"
+              className="text-gray-300"
+            />
+          }
+          label="Solana Docs"
+          onClick={visitSolanaDocs}
+        />
+
 
       </div>
     </SafeArea>
