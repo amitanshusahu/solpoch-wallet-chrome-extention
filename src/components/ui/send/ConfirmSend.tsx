@@ -10,11 +10,15 @@ import {
   XIcon,
 } from "@phosphor-icons/react";
 import type { SimulatedTransactionResponse } from "@solana/web3.js";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { sendMessage } from "../../../lib/utils/chrome/message";
 import ConfirmWithPassword from "../util/ConfirmWithPassword";
 import { useNavigate } from "react-router-dom";
 import { solToLamports, lamportsToSol } from "../../../lib/utils/solana/conversion";
+import {
+  TransactionDebuggerEngine,
+  type ParsedInstructionNode,
+} from "../../../lib/utils/solana/transactionDebugger";
 import SimulatingOverlay from "../popup/signAndSendTransaction/SimulatingOverlay";
 import StatusBadge from "../popup/signAndSendTransaction/StatusBadge";
 import SectionCard from "../popup/signAndSendTransaction/SectionCard";
@@ -39,6 +43,57 @@ export default function ConfirmSend({
   const [isSending, setIsSending] = useState(false);
   const [signature, setSignature] = useState<string | null>(null);
   const account = useAccountStore((state) => state.account);
+  const simErr = simulationResult?.err ?? null;
+  const unitsConsumed = simulationResult?.unitsConsumed;
+  const estimatedFee = lamportsToSol(5000);
+  const parsedInstructions = useMemo(
+    () => TransactionDebuggerEngine.parseInstructions(simulationResult?.logs ?? []),
+    [simulationResult?.logs]
+  );
+
+  const renderInstructionNode = (node: ParsedInstructionNode, level = 0) => {
+    const isFailed = node.status === "failed";
+    const statusText =
+      node.status === "success" ? "success" : node.status === "failed" ? "failed" : "in progress";
+
+    return (
+      <details key={node.id} className="group" open={level === 0}>
+        <summary className="list-none cursor-pointer" style={{ paddingLeft: `${level * 10}px` }}>
+          <div className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-white/5 transition-colors">
+            <div className="flex items-center gap-2 min-w-0">
+              <span
+                className={`h-1.5 w-1.5 rounded-full shrink-0 ${isFailed ? "bg-red-400" : "bg-green-400"}`}
+              />
+              <p className="text-xs text-gray-200 truncate">
+                {TransactionDebuggerEngine.getInstructionLabel(node)}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {node.computeUnitsConsumed !== undefined && (
+                <span className="text-[10px] text-gray-500 font-mono">
+                  {node.computeUnitsConsumed.toLocaleString()} CU
+                </span>
+              )}
+              <span
+                className={`text-[10px] uppercase tracking-wide ${isFailed ? "text-red-300" : "text-green-300"}`}
+              >
+                {statusText}
+              </span>
+            </div>
+          </div>
+        </summary>
+
+        <div className="mt-1.5 flex flex-col gap-1" style={{ paddingLeft: `${(level + 1) * 10}px` }}>
+          {node.events.map((event, index) => (
+            <p key={`${node.id}-${event.type}-${index}`} className="text-[11px] font-mono text-gray-500 break-all">
+              - {event.message}
+            </p>
+          ))}
+          {node.children.map((child) => renderInstructionNode(child, level + 1))}
+        </div>
+      </details>
+    );
+  };
 
   useEffect(() => {
     async function simulate() {
@@ -168,10 +223,6 @@ export default function ConfirmSend({
   }
 
   // ── Main confirm view ──────────────────────────────────────────────────────
-  const simErr = simulationResult?.err ?? null;
-  const unitsConsumed = simulationResult?.unitsConsumed;
-  const estimatedFee = lamportsToSol(5000);
-
   return (
     <>
       {/* Scrollable body */}
@@ -267,12 +318,42 @@ export default function ConfirmSend({
           </div>
         )}
 
-        {/* Simulation logs */}
-        {simulationResult?.logs && simulationResult.logs.length > 0 && (
+        {/* Transaction debugger */}
+        {parsedInstructions.length > 0 && (
+          <div className="flex flex-col gap-1.5">
+            <p className="text-xs text-gray-500 px-0.5">Instruction debugger</p>
+            <SectionCard>
+              <div className="px-2 py-2 max-h-44 overflow-y-auto scrollbar-hide">
+                {parsedInstructions.map((instruction, index) => (
+                  <details key={`root-${instruction.id}`} className="group" open={index === 0}>
+                    <summary className="list-none cursor-pointer">
+                      <div className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-white/5 transition-colors">
+                        <p className="text-xs text-gray-200 truncate">
+                          {TransactionDebuggerEngine.formatInstructionTitle(instruction, index)}
+                        </p>
+                        {instruction.computeUnitsConsumed !== undefined && (
+                          <span className="text-[10px] text-gray-500 font-mono shrink-0">
+                            {instruction.computeUnitsConsumed.toLocaleString()} CU
+                          </span>
+                        )}
+                      </div>
+                    </summary>
+                    <div className="mt-1.5 flex flex-col gap-1.5">
+                      {renderInstructionNode(instruction)}
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </SectionCard>
+          </div>
+        )}
+
+        {/* Fallback raw logs */}
+        {parsedInstructions.length === 0 && simulationResult?.logs && simulationResult.logs.length > 0 && (
           <details className="group">
             <summary className="flex items-center gap-2 cursor-pointer list-none">
               <div className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors select-none">
-                <span>View logs ({simulationResult.logs.length})</span>
+                <span>View raw logs ({simulationResult.logs.length})</span>
               </div>
             </summary>
             <div className="mt-2 rounded-xl bg-white/3 border border-white/6 p-3 max-h-32 overflow-y-auto scrollbar-hide">
