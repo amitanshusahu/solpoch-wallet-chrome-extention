@@ -28,6 +28,7 @@ import Row from "../popup/signAndSendTransaction/Row";
 import { shortAddress } from "../../../lib/utils/solana/parse";
 import { useAccountStore } from "../../../store";
 import { AccountBookService } from "../../../lib/core/walletService/accountBook.service";
+import AiCrad from "../layout/AiCrad";
 
 export default function ConfirmSend({
   amount,
@@ -266,6 +267,8 @@ export default function ConfirmSend({
             <StatusBadge err={simErr} />
           </div>
         )}
+
+        <AiCrad loading={true} content="Analyzing transaction..." />
 
         {/* No simulation result yet */}
         {!simulationResult && !simulating && (
