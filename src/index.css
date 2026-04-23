@@ -94,3 +94,31 @@ button {
 .copy:active {
   transform: scale(0.8);
 }
+
+.tool-tip {
+  position: absolute;
+  left: 15px;
+  top: -5px;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.377);
+  color: white;
+  padding: 0.25em 0.5em;
+  border-radius: 5px;
+  font-size: 10px;
+  white-space: nowrap;
+  opacity: 0;
+  border: 1px solid rgba(255, 255, 255, 0.089);
+  transition: all 0.2s ease-in-out;
+  transform: scaleX(0);
+}
+
+.tool-tip-wrapper {
+  position: relative;
+  width: fit-content;
+  cursor: help;
+}
+
+.tool-tip-wrapper:hover .tool-tip {
+  transform: scaleX(1);
+  opacity: 1;
+}

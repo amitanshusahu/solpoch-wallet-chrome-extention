@@ -1,5 +1,6 @@
 import {
   ArrowUpIcon,
+  CaretRightIcon,
   CheckIcon,
   CheckCircleIcon,
   CpuIcon,
@@ -8,6 +9,7 @@ import {
   LightningIcon,
   WarningCircleIcon,
   XIcon,
+  InfoIcon,
 } from "@phosphor-icons/react";
 import type { SimulatedTransactionResponse } from "@solana/web3.js";
 import { useEffect, useMemo, useState } from "react";
@@ -67,6 +69,12 @@ export default function ConfirmSend({
               <p className="text-xs text-gray-200 truncate">
                 {TransactionDebuggerEngine.getInstructionLabel(node)}
               </p>
+              <div className="tool-tip-wrapper text-gray-200">
+                <InfoIcon size={14} className="text-gray-400"/>
+                <div className="tool-tip">
+                  {node.programId}
+                </div>
+              </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               {node.computeUnitsConsumed !== undefined && (
@@ -79,6 +87,11 @@ export default function ConfirmSend({
               >
                 {statusText}
               </span>
+              <CaretRightIcon
+                size={12}
+                weight="bold"
+                className="text-gray-500 shrink-0 transition-transform duration-200 group-open:rotate-90"
+              />
             </div>
           </div>
         </summary>
@@ -325,17 +338,32 @@ export default function ConfirmSend({
             <SectionCard>
               <div className="px-2 py-2 max-h-44 overflow-y-auto scrollbar-hide">
                 {parsedInstructions.map((instruction, index) => (
-                  <details key={`root-${instruction.id}`} className="group" open={index === 0}>
+                  <details key={`root-${instruction.id}`} className="group relative" open={index === 0}>
                     <summary className="list-none cursor-pointer">
                       <div className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-white/5 transition-colors">
-                        <p className="text-xs text-gray-200 truncate">
-                          {TransactionDebuggerEngine.formatInstructionTitle(instruction, index)}
-                        </p>
-                        {instruction.computeUnitsConsumed !== undefined && (
-                          <span className="text-[10px] text-gray-500 font-mono shrink-0">
-                            {instruction.computeUnitsConsumed.toLocaleString()} CU
+                        <div className="flex items-center gap-2 min-w-0 justify-center">
+                          <span className="text-xs text-gray-200 truncate">
+                            {TransactionDebuggerEngine.formatInstructionTitle(instruction, index)}
                           </span>
-                        )}
+                          <div className="tool-tip-wrapper">
+                            <InfoIcon size={14} className="text-gray-400" />
+                            <div className="tool-tip">
+                              {instruction.programId}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {instruction.computeUnitsConsumed !== undefined && (
+                            <span className="text-[10px] text-gray-500 font-mono shrink-0">
+                              {instruction.computeUnitsConsumed.toLocaleString()} CU
+                            </span>
+                          )}
+                          <CaretRightIcon
+                            size={12}
+                            weight="bold"
+                            className="text-gray-500 shrink-0 transition-transform duration-200 group-open:rotate-90"
+                          />
+                        </div>
                       </div>
                     </summary>
                     <div className="mt-1.5 flex flex-col gap-1.5">
@@ -352,8 +380,13 @@ export default function ConfirmSend({
         {parsedInstructions.length === 0 && simulationResult?.logs && simulationResult.logs.length > 0 && (
           <details className="group">
             <summary className="flex items-center gap-2 cursor-pointer list-none">
-              <div className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors select-none">
+              <div className="flex items-center justify-between gap-2 w-full text-xs text-gray-500 hover:text-gray-300 transition-colors select-none">
                 <span>View raw logs ({simulationResult.logs.length})</span>
+                <CaretRightIcon
+                  size={12}
+                  weight="bold"
+                  className="text-gray-500 shrink-0 transition-transform duration-200 group-open:rotate-90"
+                />
               </div>
             </summary>
             <div className="mt-2 rounded-xl bg-white/3 border border-white/6 p-3 max-h-32 overflow-y-auto scrollbar-hide">

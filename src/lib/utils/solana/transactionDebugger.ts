@@ -195,12 +195,13 @@ export class TransactionDebuggerEngine {
   }
 
   static formatInstructionTitle(node: ParsedInstructionNode, index: number): string {
-    const baseLabel = this.getInstructionLabel(node);
+    // remove program , ex -> System Program -> System
+    const baseLabel = this.getInstructionLabel(node).replace(/Program$/i, "").trim();
     return `Instruction #${index + 1}: ${baseLabel}`;
   }
 
   static getInstructionLabel(node: ParsedInstructionNode): string {
-    const cleanedProgramName = node.programName.replace(/\s+Program$/i, "");
+    const cleanedProgramName = node.programName;
     if (node.decodedInstruction) {
       return `${cleanedProgramName} ${node.decodedInstruction}`;
     }
