@@ -29,6 +29,10 @@ import { shortAddress } from "../../../lib/utils/solana/parse";
 import { useAccountStore } from "../../../store";
 import { AccountBookService } from "../../../lib/core/walletService/accountBook.service";
 import AiCrad from "../layout/AiCrad";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { API_ROUTES } from "../../../lib/http/api";
+import { RpcService } from "../../../lib/rpc";
 
 export default function ConfirmSend({
   amount,
@@ -49,14 +53,6 @@ export default function ConfirmSend({
   const simErr = simulationResult?.err ?? null;
   const unitsConsumed = simulationResult?.unitsConsumed;
   const estimatedFee = lamportsToSol(5000);
-  const amountValue = Number.parseFloat(amount);
-  const normalizedAmount = Number.isFinite(amountValue) ? amountValue : 0;
-  const senderDelta = normalizedAmount + estimatedFee;
-
-  const formatSol = (value: number) => {
-    if (!Number.isFinite(value)) return "0";
-    return value.toFixed(9).replace(/\.?0+$/, "");
-  };
 
   const parsedInstructions = useMemo(
     () => TransactionDebuggerEngine.parseInstructions(simulationResult?.logs ?? []),
@@ -165,6 +161,29 @@ export default function ConfirmSend({
     }
   };
 
+  const { data: aiExplanation, isLoading: isAiExplanationLoading, isError: isAiExplanationError } = useQuery({
+    queryKey: ["aiExplanation", simErr],
+    queryFn: async () => {
+      if (!simErr) return null;
+      const senderBalance = account?.pubkey ? await RpcService.getBalance(account?.pubkey) : "Unknown";
+      const context = `
+        Simulation error: ${JSON.stringify(simErr)},
+        Senders Balance: ${senderBalance},
+        Transfer Amount: ${amount} SOL,
+        Estimated Fee: ${estimatedFee} SOL,
+        Units Consumed: ${unitsConsumed ?? "Unknown"},
+        Parsed Instructions: ${JSON.stringify(parsedInstructions)},
+        Action: Sending ${amount} SOL to ${toAddress} on Solana Devnet.
+        Asset: SOL
+      `;
+      const res = await axios.post(API_ROUTES.ai.explainSimulationError, {
+        results: context,
+      });
+      return res.data;
+    },
+    enabled: !!simErr,
+  })
+
   // ── Password gate ──────────────────────────────────────────────────────────
   if (!confimedWithPassword) {
     return (
@@ -268,7 +287,12 @@ export default function ConfirmSend({
           </div>
         )}
 
-        <AiCrad loading={true} content="Analyzing transaction..." />
+        {/* ai explanation */}
+        {
+          simErr && !isAiExplanationError && (
+            <AiCrad loading={isAiExplanationLoading} content={aiExplanation} />
+          )
+        }
 
         {/* No simulation result yet */}
         {!simulationResult && !simulating && (
@@ -339,28 +363,6 @@ export default function ConfirmSend({
                   accent="neutral"
                 />
               )}
-            </SectionCard>
-
-            <p className="text-xs text-gray-500 px-0.5 mt-1">State Changes</p>
-            <SectionCard>
-              <Row
-                label="Sender"
-                value={`-${formatSol(senderDelta)} SOL`}
-                icon={<ArrowUpIcon size={13} />}
-                accent="red"
-              />
-              <Row
-                label="Receiver"
-                value={`+${formatSol(normalizedAmount)} SOL`}
-                icon={<CheckCircleIcon size={13} />}
-                accent="green"
-              />
-              <Row
-                label="Network fee"
-                value={`-${formatSol(estimatedFee)} SOL`}
-                icon={<LightningIcon size={13} />}
-                accent="neutral"
-              />
             </SectionCard>
           </div>
         )}

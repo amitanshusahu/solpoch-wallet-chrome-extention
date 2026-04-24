@@ -29,7 +29,7 @@ export default function AiCrad({
   }, [loading]);
 
   return (
-    <PopCard>
+    <PopCard loading={loading}>
       <div className="flex gap-2 justify-between">
         <div className="flex flex-col gap-2">
           <div className="flex gap-1">
@@ -38,13 +38,13 @@ export default function AiCrad({
             </div>
             <h3 className="font-bold text-xs">AI Insight</h3>
           </div>
-          <p className="text-xs text-gray-300">
+          <p className="text-xs text-gray-300 whitespace-pre-line max-h-[100px] overflow-y-scroll scrollbar-hide">
             {loading ? loadingText : content}
           </p>
         </div>
         <div className="w-fit pop-button h-fit p-3 rounded-full">
-          <div className="w-[24px] h-[24px]">
-            <img src="/ai.png" alt="AI Logo" className="w-[24px] h-[24px]" />
+          <div className="w-[20px] h-[20px]">
+            <img src="/ai.png" alt="AI Logo" className="w-[20px] h-[20px]" />
           </div>
         </div>
       </div>
