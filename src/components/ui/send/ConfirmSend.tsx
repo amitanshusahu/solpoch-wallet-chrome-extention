@@ -182,6 +182,11 @@ export default function ConfirmSend({
       return res.data;
     },
     enabled: !!simErr,
+    staleTime: 0,
+    gcTime: 0, // removes it quickly
+    meta: {
+      persist: false, // stop persisting
+    },
   })
 
   // ── Password gate ──────────────────────────────────────────────────────────

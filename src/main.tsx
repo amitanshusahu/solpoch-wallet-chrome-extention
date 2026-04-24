@@ -14,12 +14,17 @@ persistQueryClient({
   queryClient,
   persister: chromeStoragePersister,
   maxAge: 24 * 60 * 60 * 1000,
+  dehydrateOptions: {
+    shouldDehydrateQuery: (query) => {
+      return query.meta?.persist !== false;
+    },
+  },
 });
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router}/>
+      <RouterProvider router={router} />
     </QueryClientProvider>
   </StrictMode>,
 )
