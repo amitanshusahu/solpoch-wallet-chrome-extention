@@ -1,6 +1,6 @@
 import { useSearchParams } from "react-router-dom";
 import SafeArea from "../ui/layout/SafeArea";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { sendMessage } from "../../lib/utils/chrome/message";
 import { Transaction, type SimulatedTransactionResponse } from "@solana/web3.js";
 import ConfirmWithPassword from "../ui/util/ConfirmWithPassword";
@@ -16,7 +16,6 @@ import {
   GlobeIcon,
   InfoIcon,
   LightningIcon,
-  TerminalWindowIcon,
   WarningCircleIcon,
   XIcon,
 } from "@phosphor-icons/react";
@@ -26,6 +25,16 @@ import SimulatingOverlay from "../ui/popup/signAndSendTransaction/SimulatingOver
 import StatusBadge from "../ui/popup/signAndSendTransaction/StatusBadge";
 import SectionCard from "../ui/popup/signAndSendTransaction/SectionCard";
 import Row from "../ui/popup/signAndSendTransaction/Row";
+import {
+  TransactionDebuggerEngine,
+  type ParsedInstructionNode,
+} from "../../lib/utils/solana/transactionDebugger";
+import Collapsible from "../ui/layout/Collapsible";
+import AiCrad from "../ui/layout/AiCrad";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { API_ROUTES } from "../../lib/http/api";
+import { RpcService } from "../../lib/rpc";
 
 export default function SignAndSendTransactionApproval() {
   const [searchParams] = useSearchParams();
@@ -41,6 +50,76 @@ export default function SignAndSendTransactionApproval() {
   const account = useAccountStore((state) => state.account);
   const [simulating, setSimulating] = useState(false);
   const [simulationResult, setSimulationResult] = useState<SimulatedTransactionResponse | null>(null);
+
+  const simErr = simulationResult?.err ?? null;
+  const unitsConsumed = simulationResult?.unitsConsumed;
+  const estimatedFee = parsedTx
+    ? lamportsToSol(5000 * (parsedTx.signatures.length || 1))
+    : null;
+
+  const parsedInstructions = useMemo(
+    () => TransactionDebuggerEngine.parseInstructions(simulationResult?.logs ?? []),
+    [simulationResult?.logs]
+  );
+
+  const hasFailedBranch = (node: ParsedInstructionNode): boolean => {
+    if (node.status === "failed") return true;
+    return node.children.some(hasFailedBranch);
+  };
+
+  const renderInstructionNode = (node: ParsedInstructionNode, level = 0) => {
+    const isFailed = node.status === "failed";
+    const shouldOpenByDefault = hasFailedBranch(node);
+    const statusText =
+      node.status === "success" ? "success" : node.status === "failed" ? "failed" : "in progress";
+
+    return (
+      <Collapsible
+        key={node.id}
+        defaultOpen={shouldOpenByDefault}
+        className="w-full"
+        headerClassName="px-2 py-1.5"
+        contentClassName="mt-1.5 flex flex-col gap-1"
+        title={
+          <div className="flex items-center justify-between gap-2" style={{ paddingLeft: `${level * 10}px` }}>
+            <div className="flex items-center gap-2 min-w-0">
+              <span
+                className={`h-1.5 w-1.5 rounded-full shrink-0 ${isFailed ? "bg-red-400" : "bg-green-400"}`}
+              />
+              <p className="text-xs text-gray-200 truncate">
+                {TransactionDebuggerEngine.getInstructionLabel(node)}
+              </p>
+              <div className="tool-tip-wrapper text-gray-200">
+                <InfoIcon size={14} className="text-gray-400" />
+                <div className="tool-tip">{node.programId}</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {node.computeUnitsConsumed !== undefined && (
+                <span className="text-[10px] text-gray-500 font-mono">
+                  {node.computeUnitsConsumed.toLocaleString()} CU
+                </span>
+              )}
+              <span
+                className={`text-[10px] uppercase tracking-wide ${isFailed ? "text-red-300" : "text-green-300"}`}
+              >
+                {statusText}
+              </span>
+            </div>
+          </div>
+        }
+      >
+        <div style={{ paddingLeft: `${(level + 1) * 10}px` }}>
+          {node.events.map((event, index) => (
+            <p key={`${node.id}-${event.type}-${index}`} className="text-[11px] font-mono text-gray-500 break-all">
+              - {event.message}
+            </p>
+          ))}
+          {node.children.map((child) => renderInstructionNode(child, level + 1))}
+        </div>
+      </Collapsible>
+    );
+  };
 
   // get approval from approval manager using id
   useEffect(() => {
@@ -86,6 +165,36 @@ export default function SignAndSendTransactionApproval() {
     }
     if (tx && confimedWithPassword) simulateTx();
   }, [tx, confimedWithPassword]);
+
+  const { data: aiExplanation, isLoading: isAiExplanationLoading, isError: isAiExplanationError } = useQuery({
+    queryKey: ["approvalAiExplanation", id, simErr],
+    queryFn: async () => {
+      if (!simErr) return null;
+      const senderBalance = account?.pubkey ? await RpcService.getBalance(account.pubkey) : "Unknown";
+      const context = `
+        Simulation error: ${JSON.stringify(simErr)},
+        Request Origin: ${origin || "Unknown"},
+        Sender Wallet: ${account?.pubkey ?? "Unknown"},
+        Sender Balance: ${senderBalance},
+        Estimated Fee: ${estimatedFee !== null ? `${estimatedFee} SOL` : "Unknown"},
+        Units Consumed: ${unitsConsumed ?? "Unknown"},
+        Parsed Instructions: ${JSON.stringify(parsedInstructions)},
+        Transfers: ${JSON.stringify(transfers)},
+        Transaction Payload: ${JSON.stringify(parsedTx)},
+        Action: Sign and send transaction request (wallet standard method - signAndSendTransaction).
+      `;
+      const res = await axios.post(API_ROUTES.ai.explainSimulationError, {
+        results: context,
+      });
+      return res.data;
+    },
+    enabled: !!simErr,
+    staleTime: 0,
+    gcTime: 0,
+    meta: {
+      persist: false,
+    },
+  });
 
 
   const handleApprove = async () => {
@@ -138,15 +247,6 @@ export default function SignAndSendTransactionApproval() {
       </SafeArea>
     );
   }
-
-
-  // Derived simulation data
-  const simErr = simulationResult?.err ?? null;
-  const unitsConsumed = simulationResult?.unitsConsumed;
-  const estimatedFee = parsedTx
-    ? lamportsToSol(5000 * (parsedTx.signatures.length || 1))
-    : null;
-
   // Balance change from transfers where current wallet is involved
   const myKey = account?.pubkey ?? "";
   const netLamports = transfers.reduce((acc, t) => {
@@ -190,9 +290,11 @@ export default function SignAndSendTransactionApproval() {
           {simulationResult && (
             <div className="flex flex-col gap-2">
               <StatusBadge err={simErr} />
-              {simErr && (
+              {simErr && !isAiExplanationError && (
+                <AiCrad loading={isAiExplanationLoading} content={aiExplanation} />
+              )}
+              {simErr && isAiExplanationError && (
                 <div className="flex items-center gap-1.5 bg-red-500/5 border border-red-500/10 rounded-full px-3 py-1 w-full">
-                  <TerminalWindowIcon size={12} weight="fill" className="text-red-500/50" />
                   <span className="text-xs text-red-500/50">{typeof simErr === "string" ? simErr : JSON.stringify(simErr)}</span>
                 </div>
               )}
@@ -287,15 +389,58 @@ export default function SignAndSendTransactionApproval() {
             </div>
           )}
 
-          {/* Simulation logs (collapsed) */}
-          {simulationResult?.logs && simulationResult.logs.length > 0 && (
-            <details className="group">
-              <summary className="flex items-center gap-2 cursor-pointer list-none">
-                <div className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors select-none">
-                  <CodeIcon size={12} />
-                  <span>View logs ({simulationResult.logs.length})</span>
+          {/* Transaction debugger */}
+          {parsedInstructions.length > 0 && (
+            <div className="flex flex-col gap-1.5">
+              <p className="text-xs text-gray-500 px-0.5">Instruction debugger</p>
+              <SectionCard>
+                <div className="px-2 py-2 max-h-44 overflow-y-auto scrollbar-hide">
+                  {parsedInstructions.map((instruction, index) => (
+                    <Collapsible
+                      key={`root-${instruction.id}`}
+                      defaultOpen={hasFailedBranch(instruction)}
+                      className="relative"
+                      headerClassName="px-2 py-1.5"
+                      contentClassName="mt-1.5 flex flex-col gap-1.5"
+                      title={
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0 justify-center">
+                            <span className="text-xs text-gray-200 truncate">
+                              {TransactionDebuggerEngine.formatInstructionTitle(instruction, index)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {instruction.computeUnitsConsumed !== undefined && (
+                              <span className="text-[10px] text-gray-500 font-mono shrink-0">
+                                {instruction.computeUnitsConsumed.toLocaleString()} CU
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      }
+                    >
+                      <div className="flex flex-col gap-1.5">
+                        {renderInstructionNode(instruction)}
+                      </div>
+                    </Collapsible>
+                  ))}
                 </div>
-              </summary>
+              </SectionCard>
+            </div>
+          )}
+
+          {/* Fallback raw logs */}
+          {parsedInstructions.length === 0 && simulationResult?.logs && simulationResult.logs.length > 0 && (
+            <Collapsible
+              title={
+                <div className="flex items-center justify-between gap-2 w-full text-xs text-gray-500 hover:text-gray-300 transition-colors select-none">
+                  <span>View raw logs ({simulationResult.logs.length})</span>
+                </div>
+              }
+              className="w-full"
+              headerClassName="px-0 py-0"
+              contentClassName="mt-2"
+            >
               <div className="mt-2 rounded-xl bg-white/3 border border-white/6 p-3 max-h-32 overflow-y-auto scrollbar-hide">
                 {simulationResult.logs.map((log, i) => (
                   <p key={i} className="text-xs font-mono text-gray-500 leading-5 break-all">
@@ -303,7 +448,7 @@ export default function SignAndSendTransactionApproval() {
                   </p>
                 ))}
               </div>
-            </details>
+            </Collapsible>
           )}
 
           {/* Simulation warning if not yet done */}
