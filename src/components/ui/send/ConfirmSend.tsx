@@ -1,6 +1,5 @@
 import {
   ArrowUpIcon,
-  CaretRightIcon,
   CheckIcon,
   CheckCircleIcon,
   CpuIcon,
@@ -33,6 +32,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { API_ROUTES } from "../../../lib/http/api";
 import { RpcService } from "../../../lib/rpc";
+import Collapsible from "../layout/Collapsible";
 
 export default function ConfirmSend({
   amount,
@@ -59,15 +59,26 @@ export default function ConfirmSend({
     [simulationResult?.logs]
   );
 
+  const hasFailedBranch = (node: ParsedInstructionNode): boolean => {
+    if (node.status === "failed") return true;
+    return node.children.some(hasFailedBranch);
+  };
+
   const renderInstructionNode = (node: ParsedInstructionNode, level = 0) => {
     const isFailed = node.status === "failed";
+    const shouldOpenByDefault = hasFailedBranch(node);
     const statusText =
       node.status === "success" ? "success" : node.status === "failed" ? "failed" : "in progress";
 
     return (
-      <details key={node.id} className="group" open={level === 0}>
-        <summary className="list-none cursor-pointer" style={{ paddingLeft: `${level * 10}px` }}>
-          <div className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-white/5 transition-colors">
+      <Collapsible
+        key={node.id}
+        defaultOpen={shouldOpenByDefault}
+        className="w-full"
+        headerClassName="px-2 py-1.5"
+        contentClassName="mt-1.5 flex flex-col gap-1"
+        title={
+          <div className="flex items-center justify-between gap-2" style={{ paddingLeft: `${level * 10}px` }}>
             <div className="flex items-center gap-2 min-w-0">
               <span
                 className={`h-1.5 w-1.5 rounded-full shrink-0 ${isFailed ? "bg-red-400" : "bg-green-400"}`}
@@ -93,16 +104,11 @@ export default function ConfirmSend({
               >
                 {statusText}
               </span>
-              <CaretRightIcon
-                size={12}
-                weight="bold"
-                className="text-gray-500 shrink-0 transition-transform duration-200 group-open:rotate-90"
-              />
             </div>
           </div>
-        </summary>
-
-        <div className="mt-1.5 flex flex-col gap-1" style={{ paddingLeft: `${(level + 1) * 10}px` }}>
+        }
+      >
+        <div style={{ paddingLeft: `${(level + 1) * 10}px` }}>
           {node.events.map((event, index) => (
             <p key={`${node.id}-${event.type}-${index}`} className="text-[11px] font-mono text-gray-500 break-all">
               - {event.message}
@@ -110,7 +116,7 @@ export default function ConfirmSend({
           ))}
           {node.children.map((child) => renderInstructionNode(child, level + 1))}
         </div>
-      </details>
+      </Collapsible>
     );
   };
 
@@ -379,9 +385,14 @@ export default function ConfirmSend({
             <SectionCard>
               <div className="px-2 py-2 max-h-44 overflow-y-auto scrollbar-hide">
                 {parsedInstructions.map((instruction, index) => (
-                  <details key={`root-${instruction.id}`} className="group relative" open={index === 0}>
-                    <summary className="list-none cursor-pointer">
-                      <div className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-white/5 transition-colors">
+                  <Collapsible
+                    key={`root-${instruction.id}`}
+                    defaultOpen={hasFailedBranch(instruction)}
+                    className="relative"
+                    headerClassName="px-2 py-1.5"
+                    contentClassName="mt-1.5 flex flex-col gap-1.5"
+                    title={
+                      <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0 justify-center">
                           <span className="text-xs text-gray-200 truncate">
                             {TransactionDebuggerEngine.formatInstructionTitle(instruction, index)}
@@ -393,18 +404,14 @@ export default function ConfirmSend({
                               {instruction.computeUnitsConsumed.toLocaleString()} CU
                             </span>
                           )}
-                          <CaretRightIcon
-                            size={12}
-                            weight="bold"
-                            className="text-gray-500 shrink-0 transition-transform duration-200 group-open:rotate-90"
-                          />
                         </div>
                       </div>
-                    </summary>
-                    <div className="mt-1.5 flex flex-col gap-1.5">
+                    }
+                  >
+                    <div className="flex flex-col gap-1.5">
                       {renderInstructionNode(instruction)}
                     </div>
-                  </details>
+                  </Collapsible>
                 ))}
               </div>
             </SectionCard>
@@ -413,17 +420,16 @@ export default function ConfirmSend({
 
         {/* Fallback raw logs */}
         {parsedInstructions.length === 0 && simulationResult?.logs && simulationResult.logs.length > 0 && (
-          <details className="group">
-            <summary className="flex items-center gap-2 cursor-pointer list-none">
+          <Collapsible
+            title={
               <div className="flex items-center justify-between gap-2 w-full text-xs text-gray-500 hover:text-gray-300 transition-colors select-none">
                 <span>View raw logs ({simulationResult.logs.length})</span>
-                <CaretRightIcon
-                  size={12}
-                  weight="bold"
-                  className="text-gray-500 shrink-0 transition-transform duration-200 group-open:rotate-90"
-                />
               </div>
-            </summary>
+            }
+            className="w-full"
+            headerClassName="px-0 py-0"
+            contentClassName="mt-2"
+          >
             <div className="mt-2 rounded-xl bg-white/3 border border-white/6 p-3 max-h-32 overflow-y-auto scrollbar-hide">
               {simulationResult.logs.map((log, i) => (
                 <p key={i} className="text-xs font-mono text-gray-500 leading-5 break-all">
@@ -431,7 +437,7 @@ export default function ConfirmSend({
                 </p>
               ))}
             </div>
-          </details>
+          </Collapsible>
         )}
       </div>
 
