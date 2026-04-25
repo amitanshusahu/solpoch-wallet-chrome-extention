@@ -121,36 +121,6 @@ export default function SignAllTransactionsApproval() {
     });
     window.close();
   };
-
-
-  if (!confimedWithPassword) {
-    return (
-      <SafeArea>
-        <div className="p-6 h-full">
-          <div className="flex flex-col justify-between h-full">
-            <div className="flex justify-between items-center">
-              <ProfileAvatar account={account} accountLoading={false} />
-            </div>
-            <ConfirmWithPassword
-              password={password}
-              setPassword={setPassword}
-              setConfimedWithPassword={setConfimedWithPassword}
-            />
-          </div>
-        </div>
-      </SafeArea>
-    );
-  }
-
-
-  if (simulating) {
-    return (
-      <SafeArea>
-        <SimulatingOverlay />
-      </SafeArea>
-    );
-  }
-
   const txCount = parsedTxs.length;
   const simulationResult = simulationResults[selectedTxIndex] ?? null;
   const parsedTx = parsedTxs[selectedTxIndex] ?? null;
@@ -269,6 +239,33 @@ export default function SignAllTransactionsApproval() {
       persist: false,
     },
   });
+
+  if (!confimedWithPassword) {
+    return (
+      <SafeArea>
+        <div className="p-6 h-full">
+          <div className="flex flex-col justify-between h-full">
+            <div className="flex justify-between items-center">
+              <ProfileAvatar account={account} accountLoading={false} />
+            </div>
+            <ConfirmWithPassword
+              password={password}
+              setPassword={setPassword}
+              setConfimedWithPassword={setConfimedWithPassword}
+            />
+          </div>
+        </div>
+      </SafeArea>
+    );
+  }
+
+  if (simulating) {
+    return (
+      <SafeArea>
+        <SimulatingOverlay />
+      </SafeArea>
+    );
+  }
 
 
   return (
