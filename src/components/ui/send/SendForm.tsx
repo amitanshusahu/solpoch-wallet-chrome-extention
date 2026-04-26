@@ -47,7 +47,7 @@ export default function SendForm({
             placeholder="Receiver Public Address"
           />
           <button
-            className="bg-primary p-1  absolute right-2 top-2 rounded-full"
+            className="bg-primary p-1  absolute right-2 top-1 rounded-full"
             onClick={toogleDropdown}
           >
             <AtIcon size={14} weight="bold" className="text-gray-200" />
