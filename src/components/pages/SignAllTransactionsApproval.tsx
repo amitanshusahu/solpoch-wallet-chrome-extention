@@ -121,36 +121,6 @@ export default function SignAllTransactionsApproval() {
     });
     window.close();
   };
-
-
-  if (!confimedWithPassword) {
-    return (
-      <SafeArea>
-        <div className="p-6 h-full">
-          <div className="flex flex-col justify-between h-full">
-            <div className="flex justify-between items-center">
-              <ProfileAvatar account={account} accountLoading={false} />
-            </div>
-            <ConfirmWithPassword
-              password={password}
-              setPassword={setPassword}
-              setConfimedWithPassword={setConfimedWithPassword}
-            />
-          </div>
-        </div>
-      </SafeArea>
-    );
-  }
-
-
-  if (simulating) {
-    return (
-      <SafeArea>
-        <SimulatingOverlay />
-      </SafeArea>
-    );
-  }
-
   const txCount = parsedTxs.length;
   const simulationResult = simulationResults[selectedTxIndex] ?? null;
   const parsedTx = parsedTxs[selectedTxIndex] ?? null;
@@ -270,6 +240,33 @@ export default function SignAllTransactionsApproval() {
     },
   });
 
+  if (!confimedWithPassword) {
+    return (
+      <SafeArea>
+        <div className="p-6 h-full">
+          <div className="flex flex-col justify-between h-full">
+            <div className="flex justify-between items-center">
+              <ProfileAvatar account={account} accountLoading={false} />
+            </div>
+            <ConfirmWithPassword
+              password={password}
+              setPassword={setPassword}
+              setConfimedWithPassword={setConfimedWithPassword}
+            />
+          </div>
+        </div>
+      </SafeArea>
+    );
+  }
+
+  if (simulating) {
+    return (
+      <SafeArea>
+        <SimulatingOverlay />
+      </SafeArea>
+    );
+  }
+
 
   return (
     <SafeArea>
@@ -294,10 +291,14 @@ export default function SignAllTransactionsApproval() {
                 <h2 className="text-xs text-gray-300">{origin?.replace("https://", "").replace("http://", "")}</h2>
               </div>
             </div>
-            <div className="rounded bg-primary/20 p-4 mt-8 flex gap-2">
-              <div><InfoIcon size={12} weight="fill" className="text-primary" /></div>
-              <h3 className="text-xs">By approving, you authorize <span className="text-primary">{origin}</span> to sign {txCount} transaction{txCount !== 1 ? "s" : ""}, which may or may not be submitted to the blockchain</h3>
-            </div>
+            {
+              !simErr && (
+                <div className="rounded bg-primary/20 p-4 mt-8 flex gap-2">
+                  <div><InfoIcon size={12} weight="fill" className="text-primary" /></div>
+                  <h3 className="text-xs">By approving, you authorize <span className="text-primary">{origin}</span> to sign {txCount} transaction{txCount !== 1 ? "s" : ""}, which may or may not be submitted to the blockchain</h3>
+                </div>
+              )
+            }
           </div>
 
           {/* Transaction tabs (when multiple txs) */}
@@ -310,8 +311,8 @@ export default function SignAllTransactionsApproval() {
                     key={i}
                     onClick={() => setSelectedTxIndex(i)}
                     className={`text-xs px-2 py-1 rounded-full transition-colors ${selectedTxIndex === i
-                        ? "bg-primary/70 text-white"
-                        : "bg-white/8 text-gray-400 hover:bg-white/12"
+                      ? "bg-primary/70 text-white"
+                      : "bg-white/8 text-gray-400 hover:bg-white/12"
                       }`}
                   >
                     Tx {i + 1}

@@ -280,10 +280,14 @@ export default function SignAndSendTransactionApproval() {
                 <h2 className="text-xs text-gray-300">{origin?.replace("https://", "").replace("http://", "")}</h2>
               </div>
             </div>
-            <div className="rounded bg-primary/20 p-4 mt-8 flex gap-2">
-              <div><InfoIcon size={12} weight="fill" className="text-primary" /></div>
-              <h3 className="text-xs">By approving, you authorize <span className="text-primary">{origin}</span> to sign and submit this transaction to the blockchain</h3>
-            </div>
+            {
+              !simErr && (
+                <div className="rounded bg-primary/20 p-4 mt-8 flex gap-2">
+                  <div><InfoIcon size={12} weight="fill" className="text-primary" /></div>
+                  <h3 className="text-xs">By approving, you authorize <span className="text-primary">{origin}</span> to sign and submit this transaction to the blockchain</h3>
+                </div>
+              )
+            }
           </div>
 
           {/* Simulation status */}
